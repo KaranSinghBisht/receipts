@@ -1,0 +1,142 @@
+"""Semantic layer: what the agent actually *did*, independent of tool naming.
+
+Detectors reason over `Action`s. Adapters decide which vendor tool maps to which
+`ActionKind`; nothing downstream needs to know that Bob says `execute_command`
+and Claude Code says `Bash`.
+"""
+
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+from enum import StrEnum
+
+from . import shell
+from .model import Outcome, ToolUse, Trace
+
+
+class ActionKind(StrEnum):
+    RUN_COMMAND = "run_command"
+    WRITE_FILE = "write_file"
+    READ_FILE = "read_file"
+    SEARCH = "search"
+    OTHER = "other"
+
+
+@dataclass(frozen=True, slots=True)
+class Action:
+    """One tool call paired with its outcome.
+
+    `writes` holds every path this call modified, whether through a file-editing
+    tool or through a shell command such as `sed -i` or a redirect.
+    """
+
+    seq: int
+    kind: ActionKind
+    tool_name: str
+    target: str
+    outcome: Outcome = Outcome.UNKNOWN
+    output: str = ""
+    writes: tuple[str, ...] = ()
+
+    @property
+    def wrote_anything(self) -> bool:
+        return bool(self.writes)
+
+    def wrote_test(self) -> bool:
+        return any(is_test_path(path) for path in self.writes)
+
+    def wrote_source(self) -> bool:
+        return any(not is_test_path(path) for path in self.writes)
+
+
+# Bob and Claude Code tool names, mapped to what they mean.
+_TOOL_KINDS: dict[str, ActionKind] = {
+    # IBM Bob
+    "execute_command": ActionKind.RUN_COMMAND,
+    "write_to_file": ActionKind.WRITE_FILE,
+    "apply_diff": ActionKind.WRITE_FILE,
+    "insert_content": ActionKind.WRITE_FILE,
+    "read_file": ActionKind.READ_FILE,
+    "search_files": ActionKind.SEARCH,
+    "list_files": ActionKind.SEARCH,
+    "list_code_definition_names": ActionKind.SEARCH,
+    # Claude Code
+    "bash": ActionKind.RUN_COMMAND,
+    "write": ActionKind.WRITE_FILE,
+    "edit": ActionKind.WRITE_FILE,
+    "multiedit": ActionKind.WRITE_FILE,
+    "notebookedit": ActionKind.WRITE_FILE,
+    "read": ActionKind.READ_FILE,
+    "grep": ActionKind.SEARCH,
+    "glob": ActionKind.SEARCH,
+}
+
+# Bob does not publish the key names inside `parameters`, so each adapter probes a
+# short candidate list. Confirm against a real trace and prune.
+_COMMAND_KEYS = ("command", "cmd", "command_line", "script")
+_PATH_KEYS = ("path", "file_path", "filePath", "target_file", "file")
+
+
+def kind_of(tool_name: str) -> ActionKind:
+    return _TOOL_KINDS.get(tool_name.strip().lower(), ActionKind.OTHER)
+
+
+def target_of(use: ToolUse) -> str:
+    """The command string or file path this call operated on."""
+    kind = kind_of(use.name)
+    keys = _COMMAND_KEYS if kind is ActionKind.RUN_COMMAND else _PATH_KEYS
+    for key in keys:
+        value = use.params.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return ""
+
+
+def _writes_of(kind: ActionKind, target: str) -> tuple[str, ...]:
+    if kind is ActionKind.WRITE_FILE:
+        return (target,) if target else ()
+    if kind is ActionKind.RUN_COMMAND:
+        return tuple(shell.writes(target))
+    return ()
+
+
+def actions(trace: Trace) -> list[Action]:
+    """Pair every tool call with its result, in stream order."""
+    results = trace.results_by_tool_id()
+    paired: list[Action] = []
+    for use in trace.tool_uses():
+        result = results.get(use.tool_id)
+        kind = kind_of(use.name)
+        target = target_of(use)
+        paired.append(
+            Action(
+                seq=use.seq,
+                kind=kind,
+                tool_name=use.name,
+                target=target,
+                outcome=result.outcome if result else Outcome.UNKNOWN,
+                output=(result.output or result.error) if result else "",
+                writes=_writes_of(kind, target),
+            )
+        )
+    return paired
+
+
+_TEST_PATH = re.compile(
+    r"(^|/)(tests?|spec|__tests__)/|(^|/)(test_[^/]+|[^/]+_test|[^/]+\.(test|spec))\.[a-z]+$",
+    re.IGNORECASE,
+)
+_TEST_COMMAND = re.compile(
+    r"\b(pytest|py\.test|unittest|jest|vitest|mocha|go\s+test|cargo\s+test|"
+    r"npm\s+(run\s+)?test|yarn\s+test|pnpm\s+(run\s+)?test|tox|rspec|phpunit|gradle\s+test|mvn\s+test)\b",
+    re.IGNORECASE,
+)
+
+
+def is_test_path(path: str) -> bool:
+    return bool(_TEST_PATH.search(path))
+
+
+def is_test_command(command: str) -> bool:
+    return bool(_TEST_COMMAND.search(command))
