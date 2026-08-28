@@ -8,3 +8,7 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+# session/tooling noise
+.omc/
+.superstack/
