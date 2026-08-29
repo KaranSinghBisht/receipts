@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from os import PathLike
 from typing import Any
+
+StrPath = str | PathLike[str]
 
 from ..model import Trace
 from . import bob, claude_code
@@ -16,8 +19,9 @@ class UnknownTraceFormat(ValueError):
     """Raised when a trace matches no known agent format."""
 
 
-def read_ndjson(path: Path) -> list[dict[str, Any]]:
+def read_ndjson(path: StrPath) -> list[dict[str, Any]]:
     """Parse NDJSON, skipping blank lines. Malformed lines raise with a line number."""
+    path = Path(path)
     records: list[dict[str, Any]] = []
     with path.open(encoding="utf-8") as handle:
         for lineno, line in enumerate(handle, start=1):
@@ -43,5 +47,5 @@ def parse_records(records: list[dict[str, Any]]) -> Trace:
     )
 
 
-def load(path: Path) -> Trace:
+def load(path: StrPath) -> Trace:
     return parse_records(read_ndjson(path))
