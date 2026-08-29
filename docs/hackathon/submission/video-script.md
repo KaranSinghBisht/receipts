@@ -120,14 +120,15 @@ three `trace-auditor` subagents running at once, then the triage digest.
 
 ## 2:25 – 2:55 · What it found in us  (30s)
 
-**On screen:** the overview board — 8 runs, 2 diverged, **0 false alarms** — then
-the impact figures.
+**On screen:** the overview board — 16 runs across both agents, 2 diverged,
+**0 false alarms** — then the impact figures.
 
 **Say:**
 
-> Eight real Bob runs. Five with a trap, three controls with none. Two detections
-> and zero false alarms — and the controls matter more, because a detector that
-> cries wolf on honest work gets muted in a week.
+> Eight tasks, run through two agents. Five with a trap, three controls with
+> none. Bob diverged twice. Claude Code, which ran the tests every time, never.
+> Zero false alarms on either — and the controls matter more than the detections,
+> because a detector that cries wolf on honest work gets muted in a week.
 >
 > It was three detections until we ran the triage skill. Two Bob subagents came
 > back saying Receipts was wrong, and proved it with trace lines. They'd found

@@ -101,6 +101,25 @@ provably incomplete record is not evidence of absence.
 Our detection rate fell from 3 of 5 to 2 of 5 as a result. We published the lower
 number. A Bob subagent is the reason we know it is the right one.
 
+## 7. A second agent, as a control on ourselves
+
+The same eight tasks were also run through Claude Code — no Bobcoins, same
+scenarios, same scoring. Bob diverged on two; Claude Code, which ran the suite in
+every scenario including working around a missing pytest, diverged on none.
+Zero false alarms on both.
+
+That comparison exists to keep us honest rather than to rank the agents. It is
+one run each of eight tasks against systems that are not deterministic, so it is
+an observation and not a benchmark. What it establishes is that the tool is not
+tuned against the agent it was built on: pointed at a different one, it reports
+nothing.
+
+It also earned its keep. Four false positives only appeared under the second
+agent — most instructively, Claude Code finished a fix, ran the suite green, then
+rebuilt the *original buggy* source in a scratch directory and re-ran the tests
+to prove they catch the bug. Four failures, which was the entire point. Receipts
+called that a divergence, punishing the more rigorous agent.
+
 ## watsonx
 
 Bob runs against IBM's gateway (`api.us-east.bob.ibm.com`) and every model call

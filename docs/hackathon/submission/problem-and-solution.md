@@ -1,6 +1,6 @@
 # Receipts — problem and solution
 
-*Submission statement. 489 words.*
+*Submission statement. 529 words.*
 
 ## The problem
 
@@ -49,10 +49,14 @@ is precisely the property it demands of the agent. Where judgement genuinely is
 required — *is this worth a person's time?* — that goes to parallel Bob
 subagents, and the two are never mixed.
 
-The strongest evidence is reflexive. Running the audit against Bob revealed that
-Bob Shell drops most of its own `tool_use` events — 35 of 68 calls in our corpus
-— so Receipts had been seeing less than half of every run. Bob subagents then
-caught two false positives in Receipts and proved them with trace lines. We
-lost a detection and published the lower number.
+We ran the same eight tasks through two agents. Bob diverged twice; Claude Code,
+which ran the suite every time, diverged never. Zero false alarms on both. A tool
+tuned to make one agent look bad would not report nothing on the second.
+
+The strongest evidence is reflexive. Auditing Bob revealed that Bob Shell drops
+most of its own `tool_use` events — 35 of 68 calls in our corpus — so Receipts
+had been seeing less than half of every run. Bob subagents then caught two false
+positives in Receipts and proved them with trace lines. We lost a detection and
+published the lower number.
 
 A tool that asks agents to show their receipts has to show its own.
