@@ -172,7 +172,7 @@ function findings(list) {
       <p>${esc(f.detail)}</p>
       <ul class="evidence">${f.evidence.map(e => `
         <li>
-          <div class="ev-head"><span class="ref">${e.seq >= 0 ? "event " + esc(e.seq) : "summary"}</span>
+          <div class="ev-head"><span class="ref">${e.seq >= 0 ? "line " + esc(e.seq) : "summary"}</span>
             &nbsp;· ${esc(e.label)}</div>
           ${e.excerpt ? `<div class="ev-body">${esc(e.excerpt)}</div>` : ""}
         </li>`).join("")}</ul>

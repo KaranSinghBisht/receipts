@@ -44,4 +44,6 @@ def test_diverged_report_marks_the_offending_events(load):
     raw = re.search(r"const DATA = (.*?);\n", page, re.S).group(1)
     data = json.loads(raw.encode().decode("unicode_escape"))
     assert data["verdict"] == "diverged"
-    assert [r["seq"] for r in data["timeline"] if r["flagged"]] == [5, 7, 9]
+    # `seq` is the 1-based line the event occupies in the trace file, so a reader can
+    # pull it straight out with `sed -n '<seq>p'`.
+    assert [r["seq"] for r in data["timeline"] if r["flagged"]] == [6, 8, 10]

@@ -12,9 +12,10 @@ Verify an agent run against the facts in its own trace.
 <Step>
 Locate the trace for the run. If one was not captured, re-run the task with
 `bob run --format stream-json "<task>" > trace.ndjson`.
+A directory of traces works too: `receipts traces/ --html report.html`.
 </Step>
 <Step>
-Run `receipts check trace.ndjson --html receipts.html` and read the findings.
+Run `receipts trace.ndjson --html receipts.html` and read the findings.
 </Step>
 <Step>
 For each finding, open the cited event indexes in the trace and confirm the evidence

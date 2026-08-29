@@ -9,6 +9,9 @@ from typing import Any
 
 StrPath = str | PathLike[str]
 
+#: Injected by `read_ndjson`; the 1-based line the record came from.
+LINE_KEY = "_receipts_line"
+
 from ..model import Trace
 from . import bob, claude_code
 
@@ -33,6 +36,10 @@ def read_ndjson(path: StrPath) -> list[dict[str, Any]]:
             except json.JSONDecodeError as exc:
                 raise ValueError(f"{path}:{lineno}: not valid JSON: {exc.msg}") from exc
             if isinstance(value, dict):
+                # Carry the real file line so findings can cite something a reader
+                # can pull straight out of the trace. Blank and non-object lines are
+                # skipped, so a positional index would drift.
+                value.setdefault(LINE_KEY, lineno)
                 records.append(value)
     return records
 

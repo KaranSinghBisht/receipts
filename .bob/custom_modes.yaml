@@ -13,8 +13,12 @@ customModes:
     customInstructions: >-
       Report only what the trace or the filesystem proves. Cite the event index behind every
       claim. If nothing diverges, say so plainly rather than manufacturing findings.
-    # `read` only, and no `edit` group at all: omitting a group grants no access to it, so
-    # this mode structurally cannot modify the work it audits. Separation of duties.
+    # `edit` is withheld so the auditor has no file-editing tool. That is a guard rail,
+    # not a guarantee: `execute` is required to run `receipts`, and a shell can write
+    # files. We tested this rather than assuming it -- asked to edit a file, the mode did
+    # so via `printf > notes.txt`. The real containment is therefore the workspace: point
+    # this mode at a directory holding the trace, not at the code under audit.
     groups:
       - read
+      - execute
       - skill

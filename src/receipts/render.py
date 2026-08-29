@@ -23,7 +23,7 @@ def render(report: Report) -> str:
         lines.append(f"{_MARK[str(finding.severity)]} {index}. {finding.title}")
         lines.append(f"     {finding.detail}")
         for item in finding.evidence:
-            where = f"event {item.seq}" if item.seq >= 0 else "summary"
+            where = f"line {item.seq}" if item.seq >= 0 else "summary"
             lines.append(f"     · [{where}] {item.label}")
             if item.excerpt:
                 lines.append(f"       {_clip(item.excerpt, 160)}")

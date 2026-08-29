@@ -142,3 +142,28 @@ def test_passing_claim_is_fine_when_a_suite_exists_and_ran():
         msg("All tests pass."),
     )
     assert run(t) == []
+
+
+# --- citations must resolve in the raw trace -------------------------------
+# Bob, auditing a Receipts finding, went looking for "event 6" and found the
+# evidence on line 8 instead. Positional indices drift; file lines do not.
+
+def test_evidence_cites_the_real_trace_line(tmp_path):
+    from receipts.adapters import load
+
+    lines = [
+        json.dumps(msg("starting", role="user")),
+        "",  # a blank line must not shift every citation after it
+        json.dumps(use("t1", "execute_command", {"command": "pytest -q"})),
+        json.dumps(ok("t1", "1 failed in 0.1s")),
+        json.dumps(msg("All tests pass.")),
+    ]
+    path = tmp_path / "trace.ndjson"
+    path.write_text("\n".join(lines) + "\n")
+
+    findings = run(load(path))
+    seqs = [e.seq for f in findings for e in f.evidence if e.seq >= 0]
+    assert seqs, "expected at least one cited event"
+    for seq in seqs:
+        cited = path.read_text().splitlines()[seq - 1]
+        assert json.loads(cited), f"line {seq} must be the cited record"

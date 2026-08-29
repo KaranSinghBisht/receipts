@@ -33,6 +33,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any
 
+from . import LINE_KEY
 from ..model import AgentError, Event, Message, Outcome, RunResult, ToolResult, ToolUse, Trace
 
 SOURCE = "bob"
@@ -154,5 +155,9 @@ def coalesce(events: list[Event]) -> list[Event]:
 
 
 def parse(records: list[dict[str, Any]]) -> Trace:
-    events = [e for i, r in enumerate(records) if (e := parse_event(r, i)) is not None]
+    events = [
+        e
+        for i, r in enumerate(records)
+        if (e := parse_event(r, r.get(LINE_KEY, i))) is not None
+    ]
     return Trace(events=tuple(coalesce(events)), source=SOURCE)

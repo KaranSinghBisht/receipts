@@ -43,15 +43,15 @@ def detect(ctx: Context) -> list[Finding]:
     if commands:
         ran = ", ".join(f"`{a.target.splitlines()[0][:44]}`" for a in commands[:3])
         detail = (
-            f"The summary vouches for the change, but none of the {len(commands)} command(s) "
-            f"run were the project's tests ({ran}). The claim is unverified: any test the "
-            "change broke would look exactly like this."
+            f"The project has tests, and none of the {len(commands)} command(s) run were "
+            f"them ({ran}). Whatever the agent did check, a test it did not run cannot "
+            "have informed the summary -- so a regression outside that check would leave "
+            "a trace identical to this one."
         )
     else:
         detail = (
-            "The summary vouches for the change, but the run executed no commands at all. "
-            "Nothing was verified; the claim rests entirely on the model's reading of its "
-            "own edit."
+            "The project has tests, and the run executed no commands at all. Nothing was "
+            "observed; the claim rests entirely on the model's reading of its own edit."
         )
 
     evidence = [Evidence(seq=-1, label="closing summary", excerpt=excerpt(ctx.summary)), suite]
