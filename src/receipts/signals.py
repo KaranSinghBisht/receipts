@@ -72,6 +72,33 @@ def _decisive(output: str) -> bool | None:
     return None
 
 
+# Deciding whether a *known* test command failed is a different question from
+# deciding whether unlabelled output is a test result at all. The first can lean
+# on loose signals like a bare "OK"; the second cannot -- a tool that answers
+# "ok" would otherwise read as a passing suite. This pattern only matches shapes
+# that a test runner produces and little else does.
+_TEST_OUTPUT = re.compile(
+    r"\b\d+\s+(?:tests?\s+)?(?:passed|failed)\b"
+    r"|^\s*(?:FAILED|PASSED|ERROR)\s+\S"
+    r"|\bFAILURES\b"
+    r"|\bRan\s+\d+\s+tests?\b"
+    r"|\bTests?:\s+\d+\s+(?:passed|failed)"
+    r"|\b\d+\s*/\s*\d+\s+(?:passed|tests?\s+passed)\b"
+    r"|={3,}\s*(?:test session starts|short test summary)",
+    re.MULTILINE | re.IGNORECASE,
+)
+
+
+def looks_like_test_output(text: str) -> bool:
+    """Whether this output is itself a test result, whatever produced it.
+
+    Needed because Bob drops most `tool_use` events, so a call's command text is
+    often unrecoverable while its output survives. The absence of a *recognised*
+    test command is not evidence that no test ran.
+    """
+    return bool(text) and bool(_TEST_OUTPUT.search(text))
+
+
 def command_failed(action: Action) -> bool:
     verdict = _decisive(action.output)
     if verdict is not None:

@@ -15,6 +15,7 @@ import re
 
 from ..actions import Action, ActionKind, is_test_command, is_test_path
 from ..requirements import Spec
+from ..signals import looks_like_test_output as _looks_like_test_output
 from ..signals import runner_unavailable as _runner_unavailable
 from ..model import Trace
 
@@ -87,6 +88,22 @@ class Context:
 
     def test_runs(self) -> list[Action]:
         return [a for a in self.commands() if is_test_command(a.target)]
+
+    def verifications(self) -> list[Action]:
+        """Every call whose output is a test result — including calls the agent
+        never reported, whose command text is gone but whose output survives."""
+        seen = {a.seq for a in self.test_runs()}
+        extra = [
+            a for a in self.actions
+            if a.seq not in seen and _looks_like_test_output(a.output)
+        ]
+        return sorted([*self.test_runs(), *extra], key=lambda a: a.seq)
+
+    @property
+    def incomplete(self) -> bool:
+        """True when the agent executed calls it never reported, so the absence
+        of something in this trace is not evidence it did not happen."""
+        return any(a.recovered for a in self.actions)
 
 
 # Filenames as they appear in directory listings and search output.

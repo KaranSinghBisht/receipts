@@ -78,7 +78,7 @@ def _covered_by(requirement: Requirement, sources: list[tuple[str, str]]) -> str
 
 
 def _passing_run_after(ctx: Context, seq: int) -> Action | None:
-    for action in ctx.test_runs():
+    for action in ctx.verifications():
         if action.seq <= seq or runner_unavailable(action.output):
             continue
         if not command_failed(action):
@@ -155,7 +155,7 @@ def detect(ctx: Context) -> list[Finding]:
         )
 
     if unconfirmed:
-        ran = len(ctx.test_runs())
+        ran = len(ctx.verifications())
         findings.append(
             Finding(
                 detector=NAME,

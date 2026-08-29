@@ -76,6 +76,10 @@ def matches(records: list[dict[str, Any]]) -> bool:
             return True
         if kind == "message" and "role" in record and isinstance(record.get("content"), str):
             return True
+        # Most of a Bob run arrives as results whose `tool_use` was dropped, so a
+        # stream can be almost entirely `tool_result` records and still be Bob's.
+        if kind == "tool_result" and "tool_id" in record and "status" in record:
+            return True
         stats = record.get("stats")
         if kind == "result" and isinstance(stats, dict) and "session_costs" in stats:
             return True

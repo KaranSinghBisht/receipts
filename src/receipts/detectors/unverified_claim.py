@@ -30,7 +30,7 @@ def detect(ctx: Context) -> list[Finding]:
     # A run that died because the runner was missing verified nothing, so it must
     # not count as having run the tests -- otherwise the one case where the suite
     # provably never executed is the one case this stays quiet about.
-    if [r for r in ctx.test_runs() if not runner_unavailable(r.output)]:
+    if [r for r in ctx.verifications() if not runner_unavailable(r.output)]:
         return []
     if not asserts_correctness(ctx.summary):
         return []
@@ -45,7 +45,10 @@ def detect(ctx: Context) -> list[Finding]:
 
     commands = ctx.commands()
     if commands:
-        ran = ", ".join(f"`{a.target.splitlines()[0][:44]}`" for a in commands[:3])
+        ran = ", ".join(
+            f"`{a.target.splitlines()[0][:44]}`" if a.target.strip() else "an unreported call"
+            for a in commands[:3]
+        )
         detail = (
             f"The project has tests, and none of the {len(commands)} command(s) run were "
             f"them ({ran}). Whatever the agent did check, a test it did not run cannot "

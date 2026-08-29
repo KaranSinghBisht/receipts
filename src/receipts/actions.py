@@ -39,7 +39,11 @@ class Action:
     output: str = ""
     writes: tuple[str, ...] = ()
     content: str = ""
-    """The text this call put into the file: a whole body, or a diff.""" 
+    """The text this call put into the file: a whole body, or a diff."""
+
+    recovered: bool = False
+    """True when the agent never reported this call and it was rebuilt from its
+    result. See `bob_output`: Bob emits most results without their `tool_use`.""" 
 
     @property
     def wrote_anything(self) -> bool:
@@ -129,8 +133,43 @@ def _writes_of(kind: ActionKind, target: str) -> tuple[str, ...]:
     return ()
 
 
+def _recovered(trace: Trace) -> list[Action]:
+    """Calls the agent executed but never reported. See `bob_output`."""
+    from . import bob_output
+    from .model import ToolResult
+
+    if trace.source != "bob":
+        return []
+
+    reported = {use.tool_id for use in trace.tool_uses()}
+    found = []
+    for event in trace.events:
+        if not isinstance(event, ToolResult) or event.tool_id in reported:
+            continue
+        text = event.output or event.error
+        kind, target, content = bob_output.infer(text)
+        found.append(
+            Action(
+                seq=event.seq,
+                kind=kind,
+                tool_name="(unreported)",
+                target=target,
+                outcome=event.outcome,
+                output=text,
+                writes=(target,) if kind is ActionKind.WRITE_FILE and target else (),
+                content=content,
+                recovered=True,
+            )
+        )
+    return found
+
+
 def actions(trace: Trace) -> list[Action]:
-    """Pair every tool call with its result, in stream order."""
+    """Pair every tool call with its result, in stream order.
+
+    Includes calls the agent never reported but demonstrably made: counting only
+    reported calls undercounts a Bob run by more than half.
+    """
     results = trace.results_by_tool_id()
     paired: list[Action] = []
     for use in trace.tool_uses():
@@ -149,6 +188,8 @@ def actions(trace: Trace) -> list[Action]:
                 content=content_of(use),
             )
         )
+    paired.extend(_recovered(trace))
+    paired.sort(key=lambda a: a.seq)
     return paired
 
 
