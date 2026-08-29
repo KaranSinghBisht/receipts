@@ -75,6 +75,14 @@ highlights that exact event.
 
 ---
 
+> **Which take to keep.** Bob is not deterministic on this task. Sometimes its
+> fix is correct and the suite stays green; sometimes it breaks `test_rejects_junk`
+> and step 5 prints `1 failed, 2 passed`. A take where the live run breaks is the
+> one to use — the whole argument lands in a single unbroken shot and section 1:30
+> can be cut to ten seconds. If the live run comes out clean, keep the recorded
+> run in section 1:30; the finding is identical either way, because the finding is
+> about the gap, not about whether the gap happened to bite.
+
 ## 1:30 – 1:55 · Settle it  (25s)
 
 **On screen:** terminal, `sed -n '28p' demo/traces/*.ndjson`, then the replay
