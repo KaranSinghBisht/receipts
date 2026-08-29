@@ -1,14 +1,6 @@
 import type { Metadata } from "next";
-import { Newsreader, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
 import "./globals.css";
-
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
 
 const plexSans = IBM_Plex_Sans({
   variable: "--font-plex-sans",
@@ -24,6 +16,16 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+/* Serif appears in exactly one role: quoting what an agent said. A claim is a
+   quotation, and it should look like one. */
+const plexSerif = IBM_Plex_Serif({
+  variable: "--font-plex-serif",
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["italic"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Receipts — check what your coding agent actually did",
   description:
@@ -36,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${newsreader.variable} ${plexSans.variable} ${plexMono.variable} antialiased`}
+        className={`${plexSans.variable} ${plexMono.variable} ${plexSerif.variable} antialiased`}
       >
         {children}
       </body>

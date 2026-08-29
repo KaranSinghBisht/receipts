@@ -2,18 +2,13 @@ import { Button } from "./ui";
 
 export function Nav({ repo }: { repo: string }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-rule bg-sheet/85 backdrop-blur">
-      <div className="flex items-center gap-4 px-6 py-3.5 sm:px-12 md:px-16">
-        <a
-          href="#top"
-          className="font-serif text-[22px] tracking-[0.02em] text-ink"
-        >
-          Receipts
+    <header className="sticky top-0 z-30 border-b border-rule bg-paper/90 backdrop-blur">
+      <div className="mx-auto flex max-w-[1240px] items-center gap-4 px-6 py-3.5 md:px-10">
+        <a href="#top" className="flex items-baseline gap-2.5">
+          <span className="text-[17px] font-semibold tracking-[-0.02em]">Receipts</span>
+          <span className="gutter hidden sm:inline">for IBM Bob</span>
         </a>
         <nav className="ml-auto flex items-center gap-2">
-          <span className="mr-3 hidden font-mono text-[11px] tracking-[0.1em] text-ink-3 uppercase sm:inline">
-            for IBM Bob
-          </span>
           <Button href={repo} variant="quiet">
             Source
           </Button>

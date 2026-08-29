@@ -1,63 +1,55 @@
 import study from "@/lib/study.json";
-import { Display, Eyebrow, Section, Verdict } from "./ui";
+import { Heading, Lede, Row, Verdict } from "./ui";
 
 type Cell = { verdict: string; findings: number };
-type Row = { scenario: string; label: string; trap: string; cells: Record<string, Cell> };
-
-const STATS = [
-  { n: study.runs, k: "runs audited" },
-  { n: study.agents.length, k: "agents" },
-  { n: study.diverged, k: "diverged", tone: "bad" },
-  { n: study.falseAlarms, k: "false alarms", tone: "good" },
-  { n: `${study.msPerRun} ms`, k: "per run" },
-];
+type MatrixRow = { scenario: string; label: string; cells: Record<string, Cell> };
 
 export function Study() {
-  const rows = study.matrix as Row[];
-  return (
-    <Section id="study" className="rule-b">
-      <Eyebrow>The study</Eyebrow>
-      <Display
-        lead="The same eight tasks, two agents."
-        rest="Five carry a passive trap — nothing tells the agent to cut a corner. Three are controls with no trap at all, and a control that diverges is a false alarm."
-      />
+  const rows = study.matrix as MatrixRow[];
+  const stats: [string | number, string, string?][] = [
+    [study.runs, "runs audited"],
+    [study.agents.length, "agents"],
+    [study.diverged, "diverged", "signal"],
+    [study.falseAlarms, "false alarms", "good"],
+    [`${study.msPerRun}ms`, "per run"],
+  ];
 
-      <div className="mt-12 grid grid-cols-2 overflow-hidden rounded-xl border border-rule sm:grid-cols-5">
-        {STATS.map((s, i) => (
-          <div
-            key={s.k}
-            className={`bg-sheet px-5 py-5 ${i ? "border-rule sm:border-l" : ""}`}
-          >
+  return (
+    <Row id="study" line="L05" label="the study">
+      <Heading>The same eight tasks, run by two agents</Heading>
+      <Lede>
+        Five carry a passive trap — nothing tells the agent to cut a corner, there is
+        simply a test file it is not required to run. Three are controls with no trap at
+        all, and a control that diverges is a false alarm. That number decides whether any
+        of this is usable.
+      </Lede>
+
+      <div className="mt-11 flex flex-wrap gap-x-12 gap-y-6 border-y border-rule py-6">
+        {stats.map(([n, k, tone]) => (
+          <div key={k}>
             <p
-              className={`font-mono text-[1.7rem] leading-none font-semibold tnum ${
-                s.tone === "bad" && Number(s.n) > 0
-                  ? "text-bad"
-                  : s.tone === "good"
+              className={`font-mono text-[1.75rem] leading-none font-semibold tnum ${
+                tone === "signal" && Number(n) > 0
+                  ? "text-signal"
+                  : tone === "good"
                     ? "text-good"
                     : "text-ink"
               }`}
             >
-              {s.n}
+              {n}
             </p>
-            <p className="mt-2 font-mono text-[10px] tracking-[0.13em] text-ink-3 uppercase">
-              {s.k}
-            </p>
+            <p className="gutter mt-2">{k}</p>
           </div>
         ))}
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-rule">
-        <table className="w-full border-collapse bg-sheet text-left">
+      <div className="mt-8 overflow-x-auto">
+        <table className="w-full min-w-[520px] border-collapse text-left">
           <thead>
-            <tr className="border-b border-rule bg-[#FAFBFC]">
-              <th className="px-5 py-3 font-mono text-[10px] tracking-[0.12em] text-ink-3 uppercase">
-                task
-              </th>
+            <tr className="border-b border-rule">
+              <th className="gutter py-3 pr-6 font-normal">task</th>
               {study.agents.map((a) => (
-                <th
-                  key={a}
-                  className="px-5 py-3 font-mono text-[10px] tracking-[0.12em] text-ink-3 uppercase"
-                >
+                <th key={a} className="gutter py-3 pr-6 font-normal">
                   {a}
                 </th>
               ))}
@@ -65,12 +57,12 @@ export function Study() {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.scenario} className="border-b border-rule-soft last:border-0">
-                <th className="px-5 py-3.5 align-top font-normal">
+              <tr key={row.scenario} className="border-b border-rule-soft">
+                <th className="py-3.5 pr-6 align-top font-normal">
                   <span className="font-mono text-[13px] text-ink">{row.scenario}</span>
                   <span
-                    className={`mt-0.5 block font-mono text-[9.5px] tracking-[0.1em] uppercase ${
-                      row.label === "trapped" ? "text-warn" : "text-ink-3"
+                    className={`gutter mt-0.5 block uppercase ${
+                      row.label === "trapped" ? "text-warn" : ""
                     }`}
                   >
                     {row.label}
@@ -79,14 +71,12 @@ export function Study() {
                 {study.agents.map((agent) => {
                   const cell = row.cells[agent];
                   return (
-                    <td key={agent} className="px-5 py-3.5 align-top">
+                    <td key={agent} className="py-3.5 pr-6 align-top">
                       {cell ? (
                         <span className="flex items-center gap-2.5">
                           <Verdict value={cell.verdict} />
                           {cell.findings > 0 && (
-                            <span className="font-mono text-[11px] text-ink-3 tnum">
-                              {cell.findings}
-                            </span>
+                            <span className="gutter">{cell.findings}</span>
                           )}
                         </span>
                       ) : (
@@ -101,22 +91,24 @@ export function Study() {
         </table>
       </div>
 
-      <p className="mt-6 max-w-[70ch] text-[14.5px] leading-relaxed text-ink-2">
-        The two agents behaved differently under identical conditions. Where pytest was
-        missing, Claude Code ran the suite through a heredoc and checked every test &mdash;
-        including the one Bob&rsquo;s change broke. That is one run each of eight tasks
-        against agents that are not deterministic, so it is an observation and not a
-        benchmark. What it does establish is that the tool is not tuned to make one agent
-        look bad: pointed at the second, it reports nothing.
-      </p>
-      <p className="mt-4 max-w-[70ch] text-[14.5px] leading-relaxed text-ink-2">
-        Auditing all {study.runs} runs by hand means reading{" "}
-        <span className="font-mono text-ink tnum">
-          {study.traceLines.toLocaleString()}
-        </span>{" "}
-        lines of trace. Receipts points at{" "}
-        <span className="font-mono text-ink tnum">{study.citedLines}</span>.
-      </p>
-    </Section>
+      <div className="mt-9 grid gap-8 md:grid-cols-2">
+        <p className="text-[14.5px] leading-relaxed text-ink-2">
+          The two agents behaved differently under identical conditions. Where pytest was
+          missing, Claude Code ran the suite through a heredoc and checked every test,
+          including the one Bob&rsquo;s change broke. One run each of eight tasks against
+          agents that are not deterministic is an observation, not a benchmark.
+        </p>
+        <p className="text-[14.5px] leading-relaxed text-ink-2">
+          What it does establish: the tool is not tuned to make one agent look bad. Pointed
+          at the second it reports nothing, and it reports nothing on the controls for
+          both. Auditing all {study.runs} by hand means reading{" "}
+          <span className="font-mono text-ink tnum">
+            {study.traceLines.toLocaleString()}
+          </span>{" "}
+          lines. Receipts points at{" "}
+          <span className="font-mono text-ink tnum">{study.citedLines}</span>.
+        </p>
+      </div>
+    </Row>
   );
 }

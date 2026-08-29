@@ -1,58 +1,60 @@
-import { Button } from "./ui";
-
-const COMMANDS = [
-  ["receipts trace.ndjson", "one run; exit 1 if it diverged"],
-  ["receipts traces/ --html report.html", "one page for a whole batch"],
-  ["receipts traces/ --watch", "a live board that fills in as runs land"],
-  ["bob run --mode verifier", "audit from inside IBM Bob"],
-];
+import { Button, Heading, Terminal } from "./ui";
 
 export function Footer({ repo }: { repo: string }) {
   return (
     <>
-      <section className="px-6 py-20 sm:px-12 md:px-16">
-        <div className="grid gap-10 md:grid-cols-2 md:items-center">
-          <div>
-            <h2 className="font-serif text-[2rem] leading-[1.12] tracking-[-0.02em] text-balance">
-              It runs where your build runs
-            </h2>
-            <p className="mt-4 max-w-[46ch] text-[15px] leading-relaxed text-ink-2">
-              Python 3.11 and no runtime dependencies. Exit code 1 on a high-severity
-              finding, which fails the check and holds the merge.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Button href="/report.html">Open the live report &rarr;</Button>
-              <Button href={repo} variant="quiet">
-                Read the source
-              </Button>
+      <section className="border-b border-rule">
+        <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-y-10 px-6 py-20 md:grid-cols-[92px_1fr] md:gap-x-8 md:px-10 md:py-24">
+          <p className="gutter">L07</p>
+          <div className="grid gap-x-14 gap-y-10 lg:grid-cols-2 lg:items-center">
+            <div>
+              <Heading>It runs where your build runs</Heading>
+              <p className="mt-5 max-w-[46ch] text-[16px] leading-[1.6] text-ink-2">
+                Python 3.11, no runtime dependencies. Exit code 1 on a high-severity
+                finding, which fails the check and holds the merge.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button href="/report.html">Open the live report &rarr;</Button>
+                <Button href={repo} variant="quiet">
+                  Read the source
+                </Button>
+              </div>
             </div>
-          </div>
 
-          <div className="overflow-hidden rounded-xl border border-rule bg-[#0C1017]">
-            <div className="space-y-3 px-5 py-5">
-              {COMMANDS.map(([cmd, note]) => (
-                <div key={cmd}>
-                  <p className="font-mono text-[12.5px] text-[#D7DEE9]">
-                    <span className="text-[#7C8798]">$ </span>
-                    {cmd}
-                  </p>
-                  <p className="font-mono text-[11px] text-[#7C8798]">{note}</p>
-                </div>
-              ))}
-            </div>
+            <Terminal title="four surfaces">
+              <span className="text-white/35">$ </span>receipts trace.ndjson{"\n"}
+              <span className="text-white/35">
+                {"  "}one run; exit 1 if it diverged{"\n\n"}
+              </span>
+              <span className="text-white/35">$ </span>receipts traces/ --html report.html
+              {"\n"}
+              <span className="text-white/35">
+                {"  "}one page for a whole batch{"\n\n"}
+              </span>
+              <span className="text-white/35">$ </span>receipts traces/ --watch{"\n"}
+              <span className="text-white/35">
+                {"  "}a live board that fills in as runs land{"\n\n"}
+              </span>
+              <span className="text-white/35">$ </span>bob run --mode verifier{"\n"}
+              <span className="text-white/35">{"  "}audit from inside IBM Bob</span>
+            </Terminal>
           </div>
         </div>
       </section>
 
-      <footer className="rule-t px-6 py-8 sm:px-12 md:px-16">
-        <div className="flex flex-wrap items-center gap-4 font-mono text-[11px] text-ink-3">
-          <span>Built for the IBM TechXchange 2026 Pre-conference Dev Day Hackathon.</span>
-          <a className="ml-auto text-ink-2 hover:text-accent" href="/report.html">
-            Report
-          </a>
-          <a className="text-ink-2 hover:text-accent" href={repo}>
-            Source
-          </a>
+      <footer>
+        <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-4 px-6 py-8 md:px-10">
+          <p className="gutter">
+            Built for the IBM TechXchange 2026 Pre-conference Dev Day Hackathon
+          </p>
+          <div className="ml-auto flex gap-6">
+            <a className="gutter hover:text-signal" href="/report.html">
+              Report
+            </a>
+            <a className="gutter hover:text-signal" href={repo}>
+              Source
+            </a>
+          </div>
         </div>
       </footer>
     </>
