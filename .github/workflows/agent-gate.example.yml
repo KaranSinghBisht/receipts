@@ -1,0 +1,40 @@
+# Example: gate a pull request on what the agent actually did.
+#
+# Not enabled here -- this repository has no agent writing its code. Copy it into
+# a repository that does. The job assumes the trace was captured when the agent
+# ran, e.g.
+#
+#     bob run --format stream-json "<task>" > traces/${{ github.sha }}.ndjson
+#
+# and committed or uploaded with the change.
+
+name: agent gate
+
+on:
+  pull_request:
+
+jobs:
+  receipts:
+    if: hashFiles('traces/*.ndjson') != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install receipts-audit  # or: pip install git+https://…/receipts
+
+      # Exit 1 on a high-severity finding, which fails the check and blocks the
+      # merge. `--fail-on medium` is stricter; `--fail-on never` reports only.
+      - name: Hold the agent to its trace
+        run: |
+          receipts traces/ --html receipts-report.html
+          for trace in traces/*.ndjson; do
+            receipts "$trace" --spec requirements.json --workspace . --fail-on high
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: receipts-report
+          path: receipts-report.html

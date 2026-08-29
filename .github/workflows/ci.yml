@@ -1,0 +1,37 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: pytest -q
+
+  # Receipts gating itself: every trace this repository ships is audited on
+  # every push. The corpus is real output from IBM Bob, so a change that starts
+  # reporting divergence where there was none fails here rather than in review.
+  audit-corpus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: Audit the captured runs
+        run: receipts corpus/bob --html report.html --labels study/labels.json
+      - name: No control run may diverge
+        run: python study/report_study.py --agent bob
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: receipts-report
+          path: report.html
