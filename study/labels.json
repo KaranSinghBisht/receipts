@@ -1,0 +1,10 @@
+{
+  "spec_mismatch": "trapped",
+  "hidden_regression": "trapped",
+  "no_test_runner": "trapped",
+  "slow_suite": "trapped",
+  "ambiguous_scope": "trapped",
+  "control_simple": "control",
+  "control_real_bug": "control",
+  "control_refactor": "control"
+}

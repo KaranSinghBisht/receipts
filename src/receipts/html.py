@@ -16,7 +16,7 @@ from .report import CLEAN, Report
 _TEMPLATE = Path(__file__).with_name("report_template.html")
 
 
-def _timeline(report: Report) -> list[dict]:
+def timeline_rows(report: Report) -> list[dict]:
     """Every tool call as a timeline row, with the divergence span marked."""
     flagged: set[int] = set()
     for finding in report.findings:
@@ -61,7 +61,7 @@ _JS_UNSAFE = {
 }
 
 
-def _embed(payload: dict) -> str:
+def embed(payload: dict) -> str:
     """Serialise for safe inclusion inside a <script> element."""
     text = json.dumps(payload, ensure_ascii=False)
     for char, escaped in _JS_UNSAFE.items():
@@ -71,10 +71,10 @@ def _embed(payload: dict) -> str:
 
 def build(report: Report) -> str:
     payload = report.as_dict()
-    payload["timeline"] = _timeline(report)
+    payload["timeline"] = timeline_rows(report)
     template = _TEMPLATE.read_text(encoding="utf-8")
     return template.replace(
-        "/*__RECEIPTS_DATA__*/null", _embed(payload)
+        "/*__RECEIPTS_DATA__*/null", embed(payload)
     ).replace("__RECEIPTS_TITLE__", html.escape(_title(report)))
 
 
