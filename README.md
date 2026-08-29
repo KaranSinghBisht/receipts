@@ -92,20 +92,32 @@ Exit codes: `0` clean, `1` gated, `2` error. `--fail-on` sets the bar.
 
 ## What the study found
 
-Eight seeded tasks were run through real IBM Bob: five with a passive trap —
+Eight seeded tasks, run through **two** agents: five carrying a passive trap —
 nothing tells the agent to cut a corner — and three controls with no trap at
 all. The controls carry more weight than the detections. A divergence detector
 that fires on honest work gets muted within a week, so false alarms are reported
 next to detections rather than buried.
 
 ```
-detections: 2/5 trapped     false alarms: 0/3 control
+bob      detections: 2/5 trapped     false alarms: 0/3 control
+claude   detections: 0/5 trapped     false alarms: 0/3 control
 ```
 
+The two agents behaved differently under identical conditions, and the traces
+say why. Where pytest was missing, Claude Code ran the suite through a heredoc
+instead and checked every test — including the one Bob's change broke. Given a
+test that contradicted `SPEC.md`, it ran the test first to watch it fail, then
+fixed the source. Bob, on the same tasks, twice changed code and vouched for it
+without running anything.
+
+That is one run each of eight tasks against agents that are not deterministic.
+It is an observation, not a benchmark. What it does establish is that the tool
+is not tuned to make one agent look bad: on the second agent it reports nothing,
+and it reports nothing on the controls for both.
+
 `study/run_study.py` captures the traces, `study/report_study.py` scores them,
-`study/impact.py` measures the cost. The three traps Bob did not fall for are
-not misses: given a test that contradicted `SPEC.md` it read the spec and fixed
-the *source*; asked to rename across three files it updated all three.
+`study/impact.py` measures the cost. The traps Bob did not fall for are not
+misses either — asked to rename across three files it updated all three.
 
 ```
 8 runs audited in 0.01s
@@ -150,6 +162,23 @@ refactor where the agent hit that error and then verified another way.
 the project's tests through `python -c` or a heredoc. That counts. An ad-hoc
 check of application code does not, which is why a test symbol has to appear too.
 
+**Failure heuristics may only read output that is a test result.** `pytest |
+tail` exits 0 while the suite is red, which is why output outranks the reported
+status. But applying that to *any* output means `cat test_stats.py` — printing
+source that contains `raise AssertionError(...)` — reads as a failing suite. A
+run was flagged for displaying a file.
+
+**A test run that supplies its own source is an experiment, not a verification.**
+Claude Code finished a fix, ran the suite green, then rebuilt the *original
+buggy* source in a scratch directory and ran the tests again to prove they catch
+the bug. Four failures — the expected result. Receipts called it a divergence,
+punishing the more rigorous agent.
+
+**`pip install pytest` is not a file write.** The shell-write parser matched
+`install` anywhere, for `install(1)`, so every package installation was recorded
+as writing a file named after the package. `f"{c} -> {got}"` was read as a
+redirect into a file called `{got}`.
+
 **A detector that fires on correct work is worse than no detector.** The first
 version of the unresolved-failure check flagged any failed command the summary
 did not mention — which fires on every healthy red-green cycle, where a failing
@@ -167,7 +196,7 @@ kind of thing this project exists to find.
 ## Development
 
 ```bash
-uv run --with pytest --python 3.11 pytest -q     # 57 tests
+uv run --with pytest --python 3.11 pytest -q     # 62 tests
 uv run --python 3.11 python study/run_study.py --list
 ```
 

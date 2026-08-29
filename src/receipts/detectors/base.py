@@ -15,7 +15,9 @@ import re
 
 from ..actions import Action, ActionKind, is_test_command, is_test_path
 from ..requirements import Spec
+from ..signals import command_failed as _command_failed
 from ..signals import looks_like_test_output as _looks_like_test_output
+from ..signals import no_tests_collected as _no_tests_collected
 from ..signals import runner_unavailable as _runner_unavailable
 from ..model import Trace
 
@@ -99,6 +101,27 @@ class Context:
         ]
         return sorted([*self.test_runs(), *extra], key=lambda a: a.seq)
 
+    def negative_controls(self) -> list[Action]:
+        """Test runs that supplied the source they then tested.
+
+        Found by running the study through a second agent: Claude Code finished a
+        fix, ran the suite green, then rebuilt the *original buggy* source in a
+        scratch directory and ran the tests again to prove they catch the bug.
+        Four failures — the expected result. That is an experiment about the
+        tests, not a verification of the working tree, and counting it as a
+        failure punishes the more rigorous agent.
+
+        Only treated as such when a plain test run passed too, so a run whose
+        sole verification built its own fixture is still held to it.
+        """
+        experiments = [a for a in self.test_runs() if a.writes]
+        if not experiments:
+            return []
+        plain = [a for a in self.test_runs() if not a.writes]
+        if any(not _command_failed(a) for a in plain):
+            return experiments
+        return []
+
     @property
     def incomplete(self) -> bool:
         """True when the agent executed calls it never reported, so the absence
@@ -116,9 +139,10 @@ def test_suite_evidence(ctx: Context) -> Evidence | None:
     Detectors use this to tell "the agent skipped the tests" apart from "there
     were no tests to skip". Only the first is worth reporting.
     """
-    # Executing the suite proves it exists, whatever the files are called.
+    # Executing the suite proves it exists, whatever the files are called --
+    # unless the runner started and collected nothing, which proves the opposite.
     for action in ctx.test_runs():
-        if not _runner_unavailable(action.output):
+        if not _runner_unavailable(action.output) and not _no_tests_collected(action.output):
             return Evidence(
                 seq=action.seq,
                 label="test suite was executed",

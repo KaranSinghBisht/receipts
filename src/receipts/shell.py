@@ -14,9 +14,17 @@ _QUOTES = "\"'"
 
 # `sed -i` (GNU) and `sed -i ''` (BSD) — the trailing operand is the file.
 _SED = re.compile(r"\bsed\b[^|;&]*?-i(?:\.\w+)?\b[^|;&]*", re.IGNORECASE)
-_REDIRECT = re.compile(r"(?<![0-9<>])>>?\s*([^\s|;&<>()]+)")
+# `2>&1` is not a write, and neither is the `->` in a print statement. Agents
+# print arrows constantly; without the `-` and `=` guards, `f"{c} -> {got}"`
+# records a write to a file called `{got}`.
+_REDIRECT = re.compile(r"(?<![0-9<>=!\-])>>?\s*([^\s|;&<>()]+)")
 _TEE = re.compile(r"\btee\b\s+(?:-a\s+)?([^\s|;&<>()]+)")
-_COPY_MOVE = re.compile(r"\b(?:cp|mv|install)\b\s+[^|;&]*?\s([^\s|;&<>()]+)\s*(?:$|[|;&])")
+# These must begin a clause. `install` was previously matched anywhere, for
+# install(1) -- which also matched `pip install pytest`, and every npm, apt and
+# brew install, recording a write to a file named after the package.
+_COPY_MOVE = re.compile(
+    r"(?:^|[|;&]\s*)(?:sudo\s+)?(?:cp|mv|install)\b\s+[^|;&]*?\s([^\s|;&<>()]+)\s*(?:$|[|;&])"
+)
 _TOUCH = re.compile(r"\btouch\b\s+([^\s|;&<>()]+)")
 
 _NOT_A_FILE = re.compile(r"^(?:/dev/\w+|&\d+|\d+)$")

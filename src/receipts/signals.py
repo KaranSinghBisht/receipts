@@ -89,6 +89,23 @@ _TEST_OUTPUT = re.compile(
 )
 
 
+# A runner that started and collected nothing is evidence there is no suite,
+# not evidence there is one.
+_NO_TESTS = re.compile(
+    r"\bno tests ran\b"
+    r"|\bno tests (?:were )?(?:found|collected)\b"
+    r"|\bcollected 0 items\b"
+    r"|\bRan 0 tests\b"
+    r"|\b0 tests? (?:ran|collected)\b",
+    re.IGNORECASE,
+)
+
+
+def no_tests_collected(text: str) -> bool:
+    """True when a test runner ran and found nothing to run."""
+    return bool(text) and bool(_NO_TESTS.search(text))
+
+
 def looks_like_test_output(text: str) -> bool:
     """Whether this output is itself a test result, whatever produced it.
 
@@ -100,15 +117,24 @@ def looks_like_test_output(text: str) -> bool:
 
 
 def command_failed(action: Action) -> bool:
-    verdict = _decisive(action.output)
-    if verdict is not None:
-        return not verdict
+    """Whether this command failed, output first and status second.
+
+    The output-first rule exists for pipelines: `pytest | tail` exits 0 while the
+    suite is red. But it may only apply to output that is a test result. An agent
+    printing a test file with `cat` shows source containing `AssertionError`, and
+    reading that as a failure flags a run for displaying a file.
+    """
+    if looks_like_test_output(action.output):
+        verdict = _decisive(action.output)
+        if verdict is not None:
+            return not verdict
     return action.outcome is Outcome.ERROR
 
 
 def command_succeeded(action: Action) -> bool:
     """Demonstrably succeeded. Deliberately not the negation of `command_failed`."""
-    verdict = _decisive(action.output)
-    if verdict is not None:
-        return verdict
+    if looks_like_test_output(action.output):
+        verdict = _decisive(action.output)
+        if verdict is not None:
+            return verdict
     return action.outcome is Outcome.OK

@@ -175,3 +175,62 @@ def test_documentation_edits_are_not_untested_code_changes():
         msg("Fixed the typo in the README."),
     )
     assert "claim_never_verified" not in names(run(t))
+
+
+# --- package installs are not file writes ----------------------------------
+# `install` was matched anywhere in a command, for install(1). It also matched
+# `pip install pytest`, so a run that installed a dependency was recorded as
+# writing a file called `pytest`.
+
+def test_package_installs_are_not_writes():
+    from receipts import shell
+
+    assert list(shell.writes("pip install pytest")) == []
+    assert list(shell.writes("npm install react")) == []
+    assert list(shell.writes("python -m venv .venv && .venv/bin/pip install -q pytest")) == []
+
+
+def test_real_copies_are_still_writes():
+    from receipts import shell
+
+    assert list(shell.writes("cp a.py b.py")) == ["b.py"]
+    assert list(shell.writes("cd x && cp a.py b.py")) == ["b.py"]
+    assert list(shell.writes("install -m 755 src bin/tool")) == ["bin/tool"]
+
+
+# --- output heuristics may only apply to output that is a test result ------
+# Found by running the study through a second agent: `cat test_stats.py` prints
+# source containing `raise AssertionError(...)`, and the failure heuristics read
+# that as a failing suite. Displaying a file was reported as a divergence.
+
+def test_printing_a_test_file_is_not_a_failing_suite():
+    from receipts.actions import actions
+    from receipts.signals import command_failed
+
+    t = trace(
+        use("t1", "execute_command", {"command": "cat test_stats.py"}),
+        ok("t1", "def test_mean_empty_raises():\n"
+                 "    raise AssertionError('expected ZeroDivisionError')\n"),
+    )
+    assert not command_failed(actions(t)[0])
+
+
+def test_a_red_suite_behind_a_pipe_is_still_a_failure():
+    """The reason output outranks status in the first place."""
+    from receipts.actions import actions
+    from receipts.signals import command_failed
+
+    t = trace(
+        use("t1", "execute_command", {"command": "pytest -q 2>&1 | tail -5"}),
+        ok("t1", "FAILED test_x.py::test_y - assert 1 == 2\n1 failed, 2 passed in 0.03s"),
+    )
+    assert command_failed(actions(t)[0])
+
+
+def test_a_runner_that_collected_nothing_is_not_a_suite():
+    from receipts.signals import no_tests_collected
+
+    assert no_tests_collected("no tests ran in 0.01s")
+    assert no_tests_collected("Ran 0 tests in 0.000s")
+    assert no_tests_collected("collected 0 items")
+    assert not no_tests_collected("collected 4 items\n4 passed in 0.02s")

@@ -4,8 +4,10 @@ Covers two phrasings of the same divergence: "I added tests", and "the tests
 pass". Both are claims about a suite, and neither can be true if no test file was
 written and none already existed.
 
-The "already existed" check is what keeps this quiet on the ordinary case of an
-agent running a suite it did not author.
+The "already existed" check carries most of the weight, and applies to both
+phrasings. Matching a claim in prose is loose — a run whose summary said "add
+real test coverage" as advice was read as claiming it had — so a suite that
+demonstrably exists silences this detector regardless of what was matched.
 """
 
 from __future__ import annotations
@@ -25,8 +27,11 @@ def detect(ctx: Context) -> list[Finding]:
     if any(a.wrote_test() for a in ctx.writes()):
         return []
 
-    # Claiming a pre-existing suite passes is only a problem if no suite exists.
-    if said_pass and not said_wrote and test_suite_evidence(ctx) is not None:
+    # If a suite is demonstrably there, this detector has nothing to say —
+    # whichever phrasing was matched. Claim matching is loose enough that a run
+    # which merely mentions adding tests, or suggests someone should, would
+    # otherwise be accused of not writing a suite that already exists.
+    if test_suite_evidence(ctx) is not None:
         return []
 
     claim = "tests were added" if said_wrote else "the tests pass"

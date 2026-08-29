@@ -32,8 +32,11 @@ def _resolved_later(failure: Action, commands: list[Action]) -> bool:
 
 def detect(ctx: Context) -> list[Finding]:
     commands = ctx.commands()
+    # A test run that supplied its own broken source failed on purpose.
+    controls = {a.seq for a in ctx.negative_controls()}
     unresolved = [
-        a for a in commands if command_failed(a) and not _resolved_later(a, commands)
+        a for a in commands
+        if a.seq not in controls and command_failed(a) and not _resolved_later(a, commands)
     ]
     runtime_errors = ctx.trace.errors()
     if not unresolved and not runtime_errors:
