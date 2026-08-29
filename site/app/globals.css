@@ -86,3 +86,30 @@ body {
   outline-offset: 3px;
   border-radius: 2px;
 }
+
+/* The stage the product window sits on.
+   Composited here rather than shipped as a stock image, so the page carries no
+   asset it does not own. Drop a file at public/hero-bg.jpg (or .png/.webp) and
+   page.tsx finds it and uses that instead. */
+.stage {
+  background-color: #16202C;
+  background-image:
+    radial-gradient(120% 85% at 10% -10%, rgba(255, 198, 128, 0.50), transparent 58%),
+    radial-gradient(95% 75% at 90% 4%, rgba(96, 196, 194, 0.42), transparent 60%),
+    radial-gradient(85% 70% at 68% 96%, rgba(198, 108, 84, 0.30), transparent 66%),
+    linear-gradient(158deg, #26313F 0%, #141D28 100%);
+  background-size: cover;
+  background-position: center;
+}
+
+/* A little grain, so the gradient reads as a surface rather than a screen. */
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.stage > * { position: relative; }

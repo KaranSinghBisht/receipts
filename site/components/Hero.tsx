@@ -1,70 +1,74 @@
-import { Button, Terminal } from "./ui";
+import { Button } from "./ui";
+
+/** The product shot is the live dashboard in a macOS window, not a mockup and
+ *  not a screenshot: if the audit changes, so does the picture.
+ *
+ *  The backdrop is composited in CSS. Drop a file at public/hero-bg.jpg and it
+ *  is used instead — see .stage in globals.css. */
+function Stage({ art }: { art: string | null }) {
+  return (
+    <div
+      className="stage relative overflow-hidden px-4 pt-8 pb-0 sm:px-10 sm:pt-14"
+      style={art ? { backgroundImage: `url(${art})` } : undefined}
+    >
+      <div className="mx-auto max-w-[1080px] overflow-hidden rounded-t-xl bg-[#FBFBFA] shadow-[0_40px_90px_-30px_rgba(12,14,20,0.55)] ring-1 ring-black/10">
+        <div className="flex items-center gap-2 border-b border-black/8 bg-[#EFEFED] px-4 py-3">
+          <span aria-hidden className="h-[11px] w-[11px] rounded-full bg-[#FF5F57]" />
+          <span aria-hidden className="h-[11px] w-[11px] rounded-full bg-[#FEBC2E]" />
+          <span aria-hidden className="h-[11px] w-[11px] rounded-full bg-[#28C840]" />
+          <span className="mx-auto flex items-center gap-1.5 rounded-md bg-white/85 px-3 py-1 font-mono text-[11px] text-ink-3">
+            <span aria-hidden className="text-[9px]">&#128274;</span>
+            receipts &mdash; nightly audit
+          </span>
+        </div>
+        <iframe
+          src="/report.html"
+          title="The live Receipts audit"
+          loading="lazy"
+          className="h-[560px] w-full border-0 bg-white"
+        />
+      </div>
+    </div>
+  );
+}
 
 export function Hero({
   repo,
   diverged,
   runs,
+  art,
 }: {
   repo: string;
   diverged: number;
   runs: number;
+  art: string | null;
 }) {
   return (
     <div id="top" className="border-b border-rule">
-      <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-y-12 px-6 py-20 md:grid-cols-[92px_1fr] md:gap-x-8 md:px-10 md:py-28">
-        <p className="gutter">L00</p>
+      <div className="px-6 pt-20 pb-0 md:pt-24">
+        <h1 className="display mx-auto max-w-[17ch] text-center text-[2.6rem] sm:text-[3.6rem]">
+          Your agent says the tests pass
+        </h1>
+        <p className="mx-auto mt-6 max-w-[60ch] text-center text-[17px] leading-[1.6] text-ink-2">
+          Receipts holds that sentence to the agent&rsquo;s own execution trace &mdash;
+          the files it wrote, the commands it ran, what those commands printed &mdash;
+          and cites the line that settles it.
+        </p>
 
-        <div className="min-w-0">
-          <div className="grid gap-x-14 gap-y-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center">
-            <div>
-              <h1 className="display max-w-[16ch] text-[2.6rem] sm:text-[3.4rem]">
-                Your agent says the tests pass
-              </h1>
-              <p className="mt-6 max-w-[52ch] text-[17px] leading-[1.6] text-ink-2">
-                Receipts holds that sentence to the agent&rsquo;s own execution trace
-                &mdash; the files it wrote, the commands it ran, what those commands
-                printed &mdash; and cites the line that settles it.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button href="/report.html">Open the live report &rarr;</Button>
-                <Button href={repo} variant="quiet">
-                  Read the source
-                </Button>
-              </div>
-              <p className="gutter mt-7">
-                {diverged} of {runs} real agent runs claimed something their trace does
-                not support
-              </p>
-            </div>
+        <div className="mt-9 flex flex-wrap justify-center gap-3">
+          <Button href="/report.html">Open the live report &rarr;</Button>
+          <Button href={repo} variant="quiet">
+            Read the source
+          </Button>
+        </div>
 
-            <Terminal title="receipts trace.ndjson">
-              <span className="text-white/35">$ </span>receipts trace.ndjson{"\n\n"}
-              RECEIPTS · <span className="text-[#E8837A]">diverged</span> · 1 medium ·
-              bob{"\n\n"}
-              {"  "}
-              <span className="text-white/35">claimed:</span>{" "}
-              <span className="text-[#E3B675]">
-                &quot;parse_range(&apos;5&apos;) now returns (5, 5){"\n"}
-                {"            "}and the existing range case still works.&quot;
-              </span>
-              {"\n"}
-              {"  "}
-              <span className="text-white/35">actual :</span> 1 file written, 1 command
-              run{"\n\n"}
-              {" "}
-              <span className="text-[#E8837A]">!</span>{" "}
-              <span className="font-semibold text-white">
-                1. Claimed the change works, but never{"\n"}
-                {"      "}ran the tests
-              </span>
-              {"\n"}
-              {"     "}
-              <span className="text-white/35">
-                · [line 7] test file visible in listing{"\n"}
-                {"     "}· [line 28] command run instead
-              </span>
-            </Terminal>
-          </div>
+        <p className="gutter mt-7 text-center">
+          {diverged} of {runs} real agent runs claimed something their trace does not
+          support
+        </p>
+
+        <div className="mt-14">
+          <Stage art={art} />
         </div>
       </div>
     </div>
