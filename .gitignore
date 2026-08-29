@@ -17,3 +17,6 @@ __pycache__/
 33893b2e0869f45c5249d408.pdf
 docs/hackathon/WINNING_STRATEGY.md
 docs/hackathon/HACKATHON_CONTEXT.md
+
+# built site
+dist/
