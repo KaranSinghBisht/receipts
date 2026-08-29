@@ -1,6 +1,6 @@
 # Receipts — problem and solution
 
-*Submission statement. 504 words.*
+*Submission statement. 494 words.*
 
 ## The problem
 
@@ -27,8 +27,8 @@ the line of the trace that settles it, so `sed -n '28p' trace.ndjson` returns th
 exact record a finding rests on.
 
 With `--spec`, the question widens to the one a reviewer actually has: *did the
-work match the ticket?* Bob reads the spec, ticket, or PRD and converts it into
-structured requirements. Receipts then checks those against the trace.
+work match the ticket?* Bob converts the spec into structured requirements;
+Receipts checks those against the trace.
 
 **Users** are teams running coding agents on real repositories, in four places: a
 CI gate that fails the build, a live board that fills in as overnight runs land,
@@ -46,8 +46,8 @@ required — *is this worth a person's time?* — that goes to parallel Bob
 subagents, and the two never mix.
 
 We ran the same eight tasks through two agents. Bob diverged twice; Claude Code,
-which ran the suite every time, diverged never. Zero false alarms on both. A tool
-tuned to make one agent look bad would not report nothing on the second.
+which ran the suite every time, never. Zero false alarms on both — a tool tuned
+against one agent would not report nothing on the second.
 
 The strongest evidence is reflexive. Auditing Bob revealed that Bob Shell drops
 most of its own `tool_use` events — 35 of 68 calls in our corpus — so Receipts
