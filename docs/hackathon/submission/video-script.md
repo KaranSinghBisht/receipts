@@ -139,7 +139,14 @@ three `trace-auditor` subagents running at once, then the triage digest.
 >
 > A tool that asks agents to show their receipts has to show its own.
 
-**Final frame:** the repo URL.
+**Final frame:** `receipts-tawny-six.vercel.app`, then the repo URL.
+
+> The site, the report over all sixteen runs, and the source are all up there.
+
+**Note on which surface to film where.** The *live board* (`receipts … --watch`)
+is what belongs in section 0:50 — it updates while Bob works, and that motion is
+the demo. The deployed site is for the closing frame and for judges afterwards;
+it is the same report, served rather than local.
 
 ---
 

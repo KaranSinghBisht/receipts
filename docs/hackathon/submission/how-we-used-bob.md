@@ -120,6 +120,13 @@ rebuilt the *original buggy* source in a scratch directory and re-ran the tests
 to prove they catch the bug. Four failures, which was the entire point. Receipts
 called that a divergence, punishing the more rigorous agent.
 
+## Where to see it
+
+The site and the report over all sixteen runs are published at
+**receipts-tawny-six.vercel.app**, rebuilt from the corpora by
+`study/build_pages.py`, so every figure on it is derived from the study rather
+than written by hand.
+
 ## watsonx
 
 Bob runs against IBM's gateway (`api.us-east.bob.ibm.com`) and every model call

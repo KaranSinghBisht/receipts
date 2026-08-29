@@ -2,6 +2,10 @@
 
 **A coding agent finished, and it says the tests pass. Check.**
 
+**[receipts-tawny-six.vercel.app](https://receipts-tawny-six.vercel.app)** — the
+site, and the [live report](https://receipts-tawny-six.vercel.app/report.html)
+over all 16 runs.
+
 Receipts reads the execution trace an agent produced — the files it wrote, the
 commands it ran, and what those commands printed — and holds the agent's closing
 summary to it. When the summary claims something the trace does not support, it
@@ -197,6 +201,8 @@ kind of thing this project exists to find.
 
 ```bash
 uv run --with pytest --python 3.11 pytest -q     # 62 tests
+python study/build_pages.py --out dist           # build the site
+./deploy.sh                                      # build and publish it
 uv run --python 3.11 python study/run_study.py --list
 ```
 
