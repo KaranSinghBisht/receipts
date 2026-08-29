@@ -14,6 +14,7 @@ and it has to be visible next to the detections.
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 import sys
 import tempfile
@@ -29,6 +30,7 @@ from scenarios import SCENARIOS  # noqa: E402
 import impact  # noqa: E402
 
 LANDING = ROOT / "web" / "landing.html"
+SITE = ROOT / "site"
 CORPUS = ROOT / "corpus"
 REPO_URL = "https://github.com/KaranSinghBisht/receipts"
 
@@ -100,6 +102,69 @@ def figures() -> dict[str, str]:
     }
 
 
+def study_json() -> dict:
+    """The study, in the shape the site consumes, so the marketing page cannot
+    claim a number the corpora do not support."""
+    from receipts.actions import actions as build_actions
+    from receipts.adapters import load
+    from receipts.detectors import run as run_detectors
+    from receipts.report import DIVERGED, build
+
+    by_scenario = {s.name: s for s in SCENARIOS}
+    cells: dict[str, dict] = {}
+    findings: dict[str, dict] = {}
+    diverged = false_alarms = 0
+
+    for agent in agent_dirs():
+        for trace_path in sorted(agent.glob("*.ndjson")):
+            trace = load(trace_path)
+            report = build(trace, build_actions(trace), run_detectors(trace, None))
+            is_div = report.verdict == DIVERGED
+            diverged += is_div
+            scenario = by_scenario.get(trace_path.stem)
+            if scenario is not None and scenario.control and is_div:
+                false_alarms += 1
+            cells.setdefault(trace_path.stem, {})[agent.name] = {
+                "verdict": report.verdict,
+                "findings": len(report.findings),
+            }
+            for finding in report.findings:
+                row = findings.setdefault(
+                    finding.title,
+                    {"title": finding.title, "severity": str(finding.severity), "count": 0},
+                )
+                row["count"] += 1
+
+    totals = {"runs": 0, "seconds": 0.0, "total_lines": 0, "cited_lines": 0}
+    for agent in agent_dirs():
+        m = impact.measure(agent)
+        for key in totals:
+            totals[key] += m[key]
+
+    matrix = [
+        {
+            "scenario": name,
+            "label": "control" if by_scenario[name].control else "trapped",
+            "trap": by_scenario[name].trap,
+            "cells": cells[name],
+        }
+        for name in sorted(cells)
+        if name in by_scenario
+    ]
+    return {
+        "runs": totals["runs"],
+        "agents": [d.name for d in agent_dirs()],
+        "diverged": diverged,
+        "falseAlarms": false_alarms,
+        "traceLines": totals["total_lines"],
+        "citedLines": totals["cited_lines"],
+        "msPerRun": round(totals["seconds"] / totals["runs"] * 1000) if totals["runs"] else 0,
+        "matrix": matrix,
+        "findings": sorted(findings.values(), key=lambda f: -f["count"]),
+        "repo": REPO_URL,
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", type=Path, default=ROOT / "dist")
@@ -128,6 +193,15 @@ def main() -> int:
 
     # GitHub Pages runs Jekyll by default, which drops files it does not recognise.
     (out / ".nojekyll").write_text("")
+
+    if SITE.is_dir():
+        (SITE / "lib").mkdir(exist_ok=True)
+        (SITE / "lib" / "study.json").write_text(
+            json.dumps(study_json(), indent=2) + "\n", encoding="utf-8"
+        )
+        (SITE / "public").mkdir(exist_ok=True)
+        shutil.copy(out / "report.html", SITE / "public" / "report.html")
+        print("  site/lib/study.json + site/public/report.html")
 
     for path in sorted(out.iterdir()):
         try:

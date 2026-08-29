@@ -20,3 +20,10 @@ docs/hackathon/HACKATHON_CONTEXT.md
 
 # built site
 dist/
+
+# next
+site/node_modules/
+site/.next/
+site/.vercel/
+site/.env*.local
+site/public/report.html
