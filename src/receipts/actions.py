@@ -49,6 +49,11 @@ class Action:
     def wrote_source(self) -> bool:
         return any(not is_test_path(path) for path in self.writes)
 
+    def wrote_code(self) -> bool:
+        """A code file, as opposed to prose or config. Keeps findings about
+        untested changes off documentation edits."""
+        return any(is_code_path(path) for path in self.writes)
+
 
 # Bob and Claude Code tool names, mapped to what they mean.
 _TOOL_KINDS: dict[str, ActionKind] = {
@@ -162,3 +167,13 @@ def is_test_command(command: str) -> bool:
     if _TEST_COMMAND.search(command):
         return True
     return bool(_INLINE_EXEC.search(command) and _TEST_SYMBOL.search(command))
+
+
+_CODE_SUFFIX = re.compile(
+    r"\.(py|js|jsx|ts|tsx|mjs|cjs|rb|go|rs|java|kt|swift|c|h|cc|cpp|hpp|cs|php|scala|sh|bash)$",
+    re.IGNORECASE,
+)
+
+
+def is_code_path(path: str) -> bool:
+    return bool(_CODE_SUFFIX.search(path.strip()))

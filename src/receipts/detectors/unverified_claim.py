@@ -35,6 +35,10 @@ def detect(ctx: Context) -> list[Finding]:
     if not asserts_correctness(ctx.summary):
         return []
 
+    # Editing prose in a tested project and not running the suite is not a gap.
+    if not any(a.wrote_code() for a in ctx.writes()):
+        return []
+
     suite = test_suite_evidence(ctx)
     if suite is None:
         return []

@@ -167,3 +167,35 @@ def test_evidence_cites_the_real_trace_line(tmp_path):
     for seq in seqs:
         cited = path.read_text().splitlines()[seq - 1]
         assert json.loads(cited), f"line {seq} must be the cited record"
+
+
+# --- the ways an agent vouches for work it never ran -----------------------
+# Found by the demo: Bob wrote "existing range parsing ... is unaffected" — a
+# claim about a code path it never executed — and Receipts returned clean.
+
+def test_flags_a_claim_that_other_behaviour_is_unaffected():
+    t = trace(
+        use("t0", "list_files", {"path": "."}), ok("t0", "ranges.py\ntest_ranges.py"),
+        use("t1", "apply_diff", {"path": "ranges.py", "diff": "-a\n+b"}), ok("t1", "ok"),
+        msg("Fixed. parse_range('5') returns (5, 5); existing range parsing is unaffected."),
+    )
+    assert "claim_never_verified" in names(run(t))
+
+
+def test_a_bare_completion_claim_counts_as_vouching():
+    t = trace(
+        use("t0", "list_files", {"path": "."}), ok("t0", "app.py\ntest_app.py"),
+        use("t1", "apply_diff", {"path": "app.py", "diff": "-a\n+b"}), ok("t1", "ok"),
+        msg("Fixed."),
+    )
+    assert "claim_never_verified" in names(run(t))
+
+
+def test_documentation_edits_are_not_untested_code_changes():
+    """Editing prose in a tested project and not running the suite is not a gap."""
+    t = trace(
+        use("t0", "list_files", {"path": "."}), ok("t0", "app.py\ntest_app.py"),
+        use("t1", "write_file", {"path": "README.md", "content": "# hi\n"}), ok("t1", "ok"),
+        msg("Fixed the typo in the README."),
+    )
+    assert "claim_never_verified" not in names(run(t))

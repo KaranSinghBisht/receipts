@@ -162,6 +162,19 @@ li.flagged .rail::after{background:var(--bad-line)}
 .out{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
 .out.ok{color:var(--good)} .out.error{color:var(--bad)} .out.unknown{color:var(--ink-dim)}
 
+.live{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:11px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);margin-top:14px}
+.live .dot{width:7px;height:7px;border-radius:50%;background:var(--good);
+  animation:pulse 2s ease-in-out infinite}
+.live.stale .dot{background:var(--warn);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes arrive{from{background:var(--focus);border-color:var(--accent)}to{}}
+.card.fresh{animation:arrive 2.4s ease-out}
+@media (prefers-reduced-motion:reduce){
+  .live .dot{animation:none}
+  .card.fresh{animation:none}
+  .card:hover{transform:none}
+}
 footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--rule-soft);
   font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);line-height:1.85}
 @media (max-width:640px){
@@ -174,7 +187,8 @@ footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--rule-soft);
 <body>
 <div class="wrap" id="app"></div>
 <script>
-const DATA = /*__RECEIPTS_DATA__*/null;
+let DATA = /*__RECEIPTS_DATA__*/null;
+let FRESH = new Set();
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => (
   {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -215,7 +229,7 @@ function card(run) {
     ? `<div class="strip" aria-hidden="true">${run.strip.map(s =>
         `<i class="${esc(s)}"></i>`).join("")}</div>` : "";
 
-  return `<button class="card ${esc(run.verdict)}" data-run="${esc(run.name)}">
+  return `<button class="card ${esc(run.verdict)}${FRESH.has(run.name) ? " fresh" : ""}" data-run="${esc(run.name)}">
     <span class="card-top">
       <span class="name">${esc(run.name)}</span>
       ${run.label ? `<span class="tag">${esc(run.label)}</span>` : ""}
@@ -234,9 +248,13 @@ function overview() {
     <div class="brand">Receipts</div>
     <h1>${esc(DATA.headline)}</h1>
     <p class="sub">${esc(DATA.subhead)}</p>
+    ${DATA.live ? `<div class="live" id="live"><span class="dot"></span>
+       <span id="live-text">watching for new traces</span></div>` : ""}
     ${statsBlock()}
     <h2>Runs</h2>
-    <div class="grid">${runs.map(card).join("")}</div>
+    <div class="grid">${runs.length
+      ? runs.map(card).join("")
+      : `<div class="nofind">No traces yet.</div>`}</div>
     ${footer()}`;
 }
 
@@ -346,6 +364,44 @@ app.addEventListener("click", (event) => {
 
 window.addEventListener("hashchange", draw);
 draw();
+
+/* When served by `receipts watch`, the board follows the traces directory. */
+if (DATA.live) {
+  let revision = DATA.revision;
+  let missed = 0;
+
+  const setState = (stale, text) => {
+    const el = document.getElementById("live");
+    if (!el) return;
+    el.classList.toggle("stale", stale);
+    const label = document.getElementById("live-text");
+    if (label) label.textContent = text;
+  };
+
+  setInterval(async () => {
+    try {
+      const head = await fetch("/api/revision", { cache: "no-store" });
+      const { revision: latest } = await head.json();
+      missed = 0;
+      if (latest === revision) { setState(false, "watching for new traces"); return; }
+
+      const before = new Set(DATA.runs.map(r => r.name));
+      const next = await (await fetch("/api/audit", { cache: "no-store" })).json();
+      FRESH = new Set(next.runs.map(r => r.name).filter(n => !before.has(n)));
+      DATA = next;
+      revision = latest;
+      draw();
+      setState(false, FRESH.size
+        ? `${FRESH.size} new run${FRESH.size === 1 ? "" : "s"} audited`
+        : "audit updated");
+      setTimeout(() => { FRESH = new Set(); }, 3000);
+    } catch {
+      /* The board is a convenience, not a dependency: if `receipts watch` has
+         stopped, say so and keep the last audit on screen. */
+      if (++missed >= 3) setState(true, "not connected — showing the last audit");
+    }
+  }, 1200);
+}
 </script>
 </body>
 </html>

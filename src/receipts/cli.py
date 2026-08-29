@@ -16,6 +16,7 @@ from .html import write as write_html
 from .render import render
 from .report import build
 from .bundle import NoTraces, build_bundle, load_labels
+from .serve import serve
 
 _GATE_CHOICES = ("high", "medium", "low", "never")
 EXIT_OK, EXIT_GATED, EXIT_ERROR = 0, 1, 2
@@ -44,6 +45,13 @@ def _parser() -> argparse.ArgumentParser:
         help="exit non-zero at this severity or above (default: high)",
     )
     parser.add_argument(
+        "--watch", action="store_true",
+        help="with a directory, serve a live audit board that follows it",
+    )
+    parser.add_argument(
+        "--port", type=int, default=7878, help="port for --watch (default: 7878)",
+    )
+    parser.add_argument(
         "--labels", type=Path, default=None, metavar="FILE",
         help="optional {name: label} JSON marking control runs in the index",
     )
@@ -60,6 +68,20 @@ def _gated(findings, threshold: str) -> bool:
 
 def _build_bundle(args) -> int:
     """A directory of traces produces one page covering all of them."""
+    try:
+        labels = load_labels(args.labels) if args.labels else None
+    except ValueError as exc:
+        print(f"receipts: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+
+    if args.watch:
+        try:
+            serve(args.trace, args.port, labels)
+        except OSError as exc:
+            print(f"receipts: could not start the board: {exc}", file=sys.stderr)
+            return EXIT_ERROR
+        return EXIT_OK
+
     if args.html is None:
         print(
             f"receipts: {args.trace} is a directory; pass --html FILE to write the report",
@@ -67,7 +89,6 @@ def _build_bundle(args) -> int:
         )
         return EXIT_ERROR
     try:
-        labels = load_labels(args.labels) if args.labels else None
         page = build_bundle(args.trace, args.html, labels)
     except (NoTraces, ValueError, OSError) as exc:
         print(f"receipts: {exc}", file=sys.stderr)

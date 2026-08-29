@@ -75,13 +75,12 @@ DEFAULT_SUBHEAD = (
 )
 
 
-def build_bundle(
+def build_payload(
     traces: Path,
-    destination: Path,
     labels: dict[str, str] | None = None,
     subhead: str | None = None,
-) -> Path:
-    """Render every `*.ndjson` under `traces` into a single HTML file."""
+) -> dict:
+    """Audit every `*.ndjson` under `traces` and return the page's data."""
     paths = sorted(traces.glob("*.ndjson"))
     if not paths:
         raise NoTraces(f"no .ndjson traces in {traces}")
@@ -120,15 +119,29 @@ def build_bundle(
         },
         "runs": entries,
     }
+    return payload
 
-    title = f"Receipts — {len(entries)} runs"
-    page = (
+
+def render(payload: dict) -> str:
+    """Embed a payload into the standalone page."""
+    title = f"Receipts \u2014 {len(payload['runs'])} runs"
+    return (
         _TEMPLATE.read_text(encoding="utf-8")
         .replace("/*__RECEIPTS_DATA__*/null", embed(payload))
         .replace("__RECEIPTS_TITLE__", html_mod.escape(title))
     )
+
+
+def build_bundle(
+    traces: Path,
+    destination: Path,
+    labels: dict[str, str] | None = None,
+    subhead: str | None = None,
+) -> Path:
+    """Render every `*.ndjson` under `traces` into a single HTML file."""
+    payload = build_payload(traces, labels, subhead)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(page, encoding="utf-8")
+    destination.write_text(render(payload), encoding="utf-8")
     return destination
 
 
