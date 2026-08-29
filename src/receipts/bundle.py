@@ -24,7 +24,7 @@ from .detectors import run as run_detectors
 from .html import embed, timeline_rows
 from .report import DIVERGED, Report, build
 
-_TEMPLATE = Path(__file__).with_name("bundle_template.html")
+_TEMPLATE = Path(__file__).with_name("dashboard_template.html")
 
 
 class NoTraces(ValueError):
@@ -41,14 +41,19 @@ def _strip(report: Report, flagged: set[int]) -> list[str]:
     return cells[:80]
 
 
-def _entry(name: str, report: Report, label: str | None) -> dict:
+def _entry(name: str, report: Report, label: str | None, meta: dict | None = None) -> dict:
     data = report.as_dict()
     flagged = {e.seq for f in report.findings for e in f.evidence if e.seq >= 0}
+    meta = meta or {}
     return {
         "name": name,
+        # `scenario` and `agent` let a batch be pivoted: the same task across
+        # agents is the comparison a reviewer wants, and it is invisible in a flat
+        # list. Both fall back to what the trace itself reports.
+        "scenario": meta.get("scenario", name),
         "label": label,
         "verdict": data["verdict"],
-        "agent": data["agent"],
+        "agent": meta.get("agent") or data["agent"],
         "claim": data["claim"],
         "findings": data["findings"],
         "files_written": len(data["ground_truth"]["files_written"]),
@@ -79,6 +84,7 @@ def build_payload(
     traces: Path,
     labels: dict[str, str] | None = None,
     subhead: str | None = None,
+    meta: dict[str, dict] | None = None,
 ) -> dict:
     """Audit every `*.ndjson` under `traces` and return the page's data."""
     paths = sorted(traces.glob("*.ndjson"))
@@ -94,7 +100,9 @@ def build_payload(
             skipped.append(f"{path.name}: {exc}")
             continue
         report = build(trace, build_actions(trace), run_detectors(trace, None))
-        entries.append(_entry(path.stem, report, labels.get(path.stem)))
+        entries.append(
+            _entry(path.stem, report, labels.get(path.stem), (meta or {}).get(path.stem))
+        )
 
     if not entries:
         raise NoTraces(f"no parsable traces in {traces} ({'; '.join(skipped[:3])})")
@@ -117,6 +125,8 @@ def build_payload(
                 else None
             ),
         },
+        "agents": sorted({e["agent"] for e in entries}),
+        "scenarios": sorted({e["scenario"] for e in entries}),
         "runs": entries,
     }
     return payload
@@ -137,9 +147,10 @@ def build_bundle(
     destination: Path,
     labels: dict[str, str] | None = None,
     subhead: str | None = None,
+    meta: dict[str, dict] | None = None,
 ) -> Path:
     """Render every `*.ndjson` under `traces` into a single HTML file."""
-    payload = build_payload(traces, labels, subhead)
+    payload = build_payload(traces, labels, subhead, meta)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(render(payload), encoding="utf-8")
     return destination

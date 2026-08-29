@@ -38,6 +38,10 @@ def timeline_rows(report: Report) -> list[dict]:
                 "outcome": str(action.outcome),
                 "flagged": action.seq in flagged,
                 "test": label == "write" and _looks_like_test(action.target),
+                # Calls Bob executed but never emitted a `tool_use` for; rebuilt
+                # from their results. Worth marking, because a reviewer reading
+                # the raw trace will not find a `tool_use` line for them.
+                "recovered": action.recovered,
             }
         )
     return rows

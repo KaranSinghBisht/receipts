@@ -42,36 +42,97 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--f-sans);
   font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1060px;margin:0 auto;padding:36px 24px 96px}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+code{font-family:var(--f-mono)}
 
+.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--ground) 88%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.bar-in{max-width:1120px;margin:0 auto;padding:13px 24px;display:flex;align-items:center;gap:14px;
+  flex-wrap:wrap}
 .brand{font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.18em;
-  text-transform:uppercase;color:var(--ink-dim)}
-h1{font-size:2rem;font-weight:600;letter-spacing:-.02em;margin:10px 0 0;max-width:22ch}
-.sub{color:var(--ink-2);margin:12px 0 0;max-width:64ch}
-h2{font-family:var(--f-mono);font-size:11.5px;font-weight:600;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--ink-dim);margin:40px 0 13px}
+  text-transform:uppercase;color:var(--ink)}
+.crumb{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim)}
+.live{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);
+  font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
+.live .dot{width:7px;height:7px;border-radius:50%;background:var(--good);
+  animation:pulse 2s ease-in-out infinite}
+.live.stale .dot{background:var(--warn);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 
-/* ---- overview ---- */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:1px;
-  margin:34px 0 0;background:var(--rule);border:1px solid var(--rule);border-radius:5px;
+.wrap{max-width:1120px;margin:0 auto;padding:30px 24px 96px}
+h1{font-size:1.85rem;font-weight:600;letter-spacing:-.02em;margin:0;max-width:26ch;text-wrap:balance}
+.sub{color:var(--ink-2);margin:11px 0 0;max-width:70ch}
+h2{font-family:var(--f-mono);font-size:11.5px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-dim);margin:38px 0 13px;display:flex;
+  align-items:baseline;gap:10px;flex-wrap:wrap}
+h2 small{font-family:var(--f-sans);font-size:12.5px;letter-spacing:0;text-transform:none;
+  color:var(--ink-dim);font-weight:400}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:1px;
+  margin:26px 0 0;background:var(--rule);border:1px solid var(--rule);border-radius:6px;
   overflow:hidden}
-.stat{background:var(--surface);padding:17px 19px}
-.stat .n{font-family:var(--f-mono);font-size:1.95rem;font-weight:600;line-height:1;
+.stat{background:var(--surface);padding:16px 18px}
+.stat .n{font-family:var(--f-mono);font-size:1.8rem;font-weight:600;line-height:1;
   font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.stat .k{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
-  color:var(--ink-dim);margin-top:8px}
+.stat .k{font-family:var(--f-mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink-dim);margin-top:7px}
 .stat.bad .n{color:var(--bad)} .stat.good .n{color:var(--good)}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(316px,1fr));gap:13px}
+.matrix{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);
+  border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.matrix th,.matrix td{padding:0;text-align:left;border-bottom:1px solid var(--rule-soft)}
+.matrix tr:last-child th,.matrix tr:last-child td{border-bottom:0}
+.matrix thead th{font-family:var(--f-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-dim);padding:12px 16px;background:var(--surface-2);
+  border-bottom:1px solid var(--rule)}
+.matrix tbody th{font-weight:500;font-size:13.5px;padding:11px 16px;white-space:nowrap}
+.matrix tbody th .kind{font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-dim);display:block;margin-top:2px}
+.matrix tbody th .kind.trapped{color:var(--warn)}
+.cell{display:flex;align-items:center;gap:9px;width:100%;padding:11px 16px;
+  transition:background .1s ease}
+.cell:hover{background:var(--surface-2)}
+.cell .mk{width:9px;height:9px;border-radius:2px;flex:0 0 auto}
+.cell.clean .mk{background:var(--good-line)}
+.cell.diverged .mk{background:var(--bad)}
+.cell.none{color:var(--ink-dim);padding:11px 16px;display:block}
+.cell .txt{font-family:var(--f-mono);font-size:12px;letter-spacing:.04em}
+.cell.clean .txt{color:var(--good)}
+.cell.diverged .txt{color:var(--bad);font-weight:600}
+.cell .cnt{margin-left:auto;font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);
+  font-variant-numeric:tabular-nums}
+
+.bars{display:grid;gap:11px;background:var(--surface);border:1px solid var(--rule);
+  border-radius:6px;padding:18px 20px}
+.brow{display:grid;grid-template-columns:1fr 40px;gap:6px 14px;align-items:center}
+.brow .lbl{font-size:13.5px}
+.brow .track{grid-column:1/-1;height:6px;border-radius:3px;background:var(--surface-2);
+  overflow:hidden}
+.brow .fill{display:block;height:100%;border-radius:3px}
+.brow .fill.high{background:var(--bad)}
+.brow .fill.medium{background:var(--warn)}
+.brow .fill.low{background:var(--ink-dim)}
+.brow .num{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);text-align:right;
+  font-variant-numeric:tabular-nums}
+.none-note{background:var(--good-soft);border:1px solid color-mix(in srgb,var(--good) 25%,transparent);
+  border-radius:6px;padding:16px 18px;color:var(--good);font-size:14px}
+
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 13px}
+.chip{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;padding:5px 11px;
+  border-radius:20px;border:1px solid var(--rule);color:var(--ink-dim);background:var(--surface)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px}
 .card{display:block;width:100%;background:var(--surface);border:1px solid var(--rule);
-  border-left:3px solid var(--rule);border-radius:5px;padding:16px 18px;
+  border-left:3px solid var(--rule);border-radius:6px;padding:15px 17px;
   transition:border-color .12s ease,transform .12s ease}
 .card:hover{transform:translateY(-2px);border-color:var(--accent)}
 .card.diverged{border-left-color:var(--bad)}
 .card.clean{border-left-color:var(--good-line)}
+.card.fresh{animation:arrive 2.4s ease-out}
+@keyframes arrive{from{background:var(--focus);border-color:var(--accent)}to{}}
 .card-top{display:flex;align-items:baseline;gap:9px}
-.name{font-family:var(--f-mono);font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.name{font-family:var(--f-mono);font-size:13.5px;font-weight:600;overflow-wrap:anywhere}
 .pill{font-family:var(--f-mono);font-size:9.5px;font-weight:600;letter-spacing:.11em;
   text-transform:uppercase;padding:3px 8px;border-radius:3px;white-space:nowrap;flex:0 0 auto}
 .pill.diverged{color:var(--bad);background:var(--bad-soft)}
@@ -79,32 +140,28 @@ h2{font-family:var(--f-mono);font-size:11.5px;font-weight:600;letter-spacing:.14
 .card-top .pill{margin-left:auto}
 .tag{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--ink-dim);background:var(--surface-2);padding:3px 7px;border-radius:3px}
-
-.strip{display:flex;gap:2px;margin:14px 0 0;height:15px}
+.strip{display:flex;gap:2px;margin:13px 0 0;height:14px}
 .strip i{flex:1 1 auto;min-width:2px;border-radius:1px;background:var(--rule)}
 .strip i.ok{background:var(--good-line);opacity:.45}
 .strip i.error{background:var(--warn);opacity:.5}
 .strip i.flag{background:var(--bad)}
-
-.fline{margin:12px 0 0;font-size:13.5px;color:var(--ink-2);display:flex;gap:7px;
-  align-items:flex-start}
+.fline{margin:11px 0 0;font-size:13px;color:var(--ink-2);display:flex;gap:7px;align-items:flex-start}
 .sev{font-family:var(--f-mono);font-size:9px;font-weight:600;letter-spacing:.1em;
   text-transform:uppercase;padding:2px 5px;border-radius:2px;flex:0 0 auto;margin-top:3px}
 .sev.high{color:var(--bad);background:var(--bad-soft)}
 .sev.medium{color:var(--warn);background:var(--warn-soft)}
 .sev.low{color:var(--ink-dim);background:var(--surface-2)}
-.nofind{margin:12px 0 0;font-size:13.5px;color:var(--ink-dim)}
-.facts{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0 0;padding-top:11px;
+.nofind{margin:11px 0 0;font-size:13px;color:var(--ink-dim)}
+.facts{display:flex;flex-wrap:wrap;gap:13px;margin:13px 0 0;padding-top:10px;
   border-top:1px solid var(--rule-soft);font-family:var(--f-mono);font-size:11px;
   color:var(--ink-dim);font-variant-numeric:tabular-nums}
 
-/* ---- detail ---- */
 .back{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);padding:6px 0;
   display:inline-flex;gap:8px;align-items:center}
 .back:hover{color:var(--accent)}
-header.top{display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap;margin-top:14px;
+header.top{display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap;margin-top:12px;
   padding-bottom:18px;border-bottom:1px solid var(--rule)}
-header.top h1{font-size:1.5rem;margin:6px 0 0}
+header.top h1{font-size:1.45rem;margin:6px 0 0}
 .spacer{flex:1 1 auto}
 .verdict{font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.1em;
   text-transform:uppercase;padding:7px 13px;border-radius:3px;white-space:nowrap}
@@ -112,21 +169,19 @@ header.top h1{font-size:1.5rem;margin:6px 0 0}
   border:1px solid color-mix(in srgb,var(--bad) 30%,transparent)}
 .verdict.clean{color:var(--good);background:var(--good-soft);
   border:1px solid color-mix(in srgb,var(--good) 30%,transparent)}
-.meta{display:flex;gap:24px;flex-wrap:wrap;margin:16px 0 0;font-family:var(--f-mono);
+.meta{display:flex;gap:24px;flex-wrap:wrap;margin:15px 0 0;font-family:var(--f-mono);
   font-size:12px;color:var(--ink-dim)}
 .meta b{display:block;color:var(--ink);font-weight:600;font-size:14px;
   font-variant-numeric:tabular-nums;margin-top:2px}
-
 .compare{display:grid;grid-template-columns:84px 1fr;gap:10px 16px;background:var(--surface);
-  border:1px solid var(--rule);border-radius:5px;padding:18px}
+  border:1px solid var(--rule);border-radius:6px;padding:18px}
 .compare dt{font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink-dim);padding-top:3px}
 .compare dd{margin:0}
 .claim{font-style:italic;color:var(--ink-2)}
 .actual{font-family:var(--f-mono);font-size:13.5px;font-variant-numeric:tabular-nums}
-
 .finding{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--rule);
-  border-radius:5px;padding:16px 18px;margin-bottom:12px}
+  border-radius:6px;padding:16px 18px;margin-bottom:12px}
 .finding.high{border-left-color:var(--bad)}
 .finding.medium{border-left-color:var(--warn)}
 .finding h3{margin:0;font-size:1rem;font-weight:600;display:flex;gap:10px;align-items:baseline}
@@ -141,11 +196,10 @@ header.top h1{font-size:1.5rem;margin:6px 0 0}
   padding:7px 9px;margin-top:4px;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere;
   color:var(--ink-2)}
 .empty{background:var(--good-soft);border:1px solid color-mix(in srgb,var(--good) 25%,transparent);
-  border-radius:5px;padding:18px;color:var(--good);font-size:14px}
-
+  border-radius:6px;padding:18px;color:var(--good);font-size:14px}
 ol.tl{list-style:none;margin:0;padding:0}
-ol.tl li{display:grid;grid-template-columns:44px 24px 1fr auto;gap:12px;align-items:baseline;
-  padding:7px 10px;border-radius:3px;scroll-margin-top:24px}
+ol.tl li{display:grid;grid-template-columns:52px 24px 1fr auto;gap:12px;align-items:baseline;
+  padding:7px 10px;border-radius:3px;scroll-margin-top:80px}
 ol.tl li.flagged{background:var(--bad-soft)}
 ol.tl li.lit{box-shadow:0 0 0 2px var(--accent) inset;background:var(--focus)}
 .seq{font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
@@ -157,50 +211,61 @@ li.flagged .rail{background:var(--bad-line)}
 li.flagged .rail::after{background:var(--bad-line)}
 .what{font-family:var(--f-mono);font-size:13px;overflow-wrap:anywhere}
 .what .verb{color:var(--ink-dim);margin-right:8px}
-.what .test-tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);
-  background:var(--warn-soft);padding:1px 5px;border-radius:2px;margin-left:8px}
+.what .test-tag,.what .rec-tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  padding:1px 5px;border-radius:2px;margin-left:8px}
+.what .test-tag{color:var(--warn);background:var(--warn-soft)}
+.what .rec-tag{color:var(--ink-dim);background:var(--surface-2)}
 .out{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
 .out.ok{color:var(--good)} .out.error{color:var(--bad)} .out.unknown{color:var(--ink-dim)}
-
-.live{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:11px;
-  letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);margin-top:14px}
-.live .dot{width:7px;height:7px;border-radius:50%;background:var(--good);
-  animation:pulse 2s ease-in-out infinite}
-.live.stale .dot{background:var(--warn);animation:none}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-@keyframes arrive{from{background:var(--focus);border-color:var(--accent)}to{}}
-.card.fresh{animation:arrive 2.4s ease-out}
-@media (prefers-reduced-motion:reduce){
-  .live .dot{animation:none}
-  .card.fresh{animation:none}
-  .card:hover{transform:none}
-}
 footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--rule-soft);
   font-family:var(--f-mono);font-size:11px;color:var(--ink-dim);line-height:1.85}
-@media (max-width:640px){
+@media (prefers-reduced-motion:reduce){
+  .live .dot{animation:none} .card:hover{transform:none} .card.fresh{animation:none}
+}
+@media (max-width:720px){
   .compare{grid-template-columns:1fr;gap:4px 0}
-  ol.tl li{grid-template-columns:38px 20px 1fr;row-gap:2px}
+  ol.tl li{grid-template-columns:46px 20px 1fr;row-gap:2px}
   .out{grid-column:3}
+  .matrix-scroll{overflow-x:auto}
 }
 </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
+<div id="app"></div>
 <script>
 let DATA = /*__RECEIPTS_DATA__*/null;
 let FRESH = new Set();
+let FILTER = "all";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => (
   {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const num = (v, suffix = "") => (v === null || v === undefined) ? "—" : `${v}${suffix}`;
 const byName = (n) => DATA.runs.find(r => r.name === n);
+const isDiverged = (r) => r.verdict === "diverged";
+const titleOf = (r) => r.scenario || r.name;
 
-/* ---------------- overview ---------------- */
+function chrome(crumb) {
+  return `<div class="bar"><div class="bar-in">
+    <span class="brand">Receipts</span>
+    ${crumb ? `<span class="crumb">/ ${esc(crumb)}</span>` : ""}
+    ${DATA.live ? `<span class="live" id="live"><span class="dot"></span>
+      <span id="live-text">watching for new traces</span></span>` : ""}
+  </div></div>`;
+}
+
+function footer() {
+  return `<footer>
+    Every verdict is derived from the agent's own execution trace — no second model,
+    no judgement call. Each finding cites the trace line that proves it.<br>
+    Receipts v${esc(DATA.receipts_version)}${DATA.generated ? " · " + esc(DATA.generated) : ""}.
+  </footer>`;
+}
 
 function statsBlock() {
   const t = DATA.totals;
   const cells = [
-    ["runs audited", DATA.runs.length, ""],
+    ["runs", DATA.runs.length, ""],
+    ["agents", (DATA.agents || []).length, ""],
     ["diverged", t.diverged, t.diverged ? "bad" : ""],
     ["clean", t.clean, "good"],
     ["findings", t.findings, ""],
@@ -213,6 +278,75 @@ function statsBlock() {
   ).join("")}</div>`;
 }
 
+/* One row per task, one column per agent. A flat list hides the comparison that
+   matters most — the same task, run by different agents, side by side. */
+function matrix() {
+  const agents = DATA.agents || [];
+  const scenarios = DATA.scenarios || [];
+  if (agents.length < 2 || scenarios.length < 2) return "";
+
+  const rows = scenarios.map(scenario => {
+    const label = DATA.runs.find(r => r.scenario === scenario)?.label;
+    const cells = agents.map(agent => {
+      const run = DATA.runs.find(r => r.scenario === scenario && r.agent === agent);
+      if (!run) return `<td><span class="cell none">—</span></td>`;
+      const n = run.findings.length;
+      return `<td><button class="cell ${esc(run.verdict)}" data-run="${esc(run.name)}">
+        <span class="mk"></span><span class="txt">${esc(run.verdict)}</span>
+        <span class="cnt">${n ? esc(n) + (n === 1 ? " finding" : " findings") : ""}</span>
+      </button></td>`;
+    }).join("");
+    return `<tr><th>${esc(scenario)}${
+      label ? `<span class="kind ${esc(label)}">${esc(label)}</span>` : ""}</th>${cells}</tr>`;
+  }).join("");
+
+  return `<h2>The same task, every agent
+      <small>a control that diverges is a false alarm — the number that decides whether this is usable</small></h2>
+    <div class="matrix-scroll"><table class="matrix">
+      <thead><tr><th>task</th>${agents.map(a => `<th>${esc(a)}</th>`).join("")}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+
+function detectors() {
+  const tally = {};
+  for (const run of DATA.runs) {
+    for (const f of run.findings) {
+      tally[f.title] = tally[f.title] || { n: 0, severity: f.severity };
+      tally[f.title].n += 1;
+    }
+  }
+  const rows = Object.entries(tally).sort((a, b) => b[1].n - a[1].n);
+  if (!rows.length) {
+    return `<h2>What fired</h2><div class="none-note">
+      Nothing fired. Every summary in this batch is supported by its trace.</div>`;
+  }
+  const top = Math.max(...rows.map(([, v]) => v.n));
+  return `<h2>What fired <small>across ${esc(DATA.runs.length)} runs</small></h2>
+    <div class="bars">${rows.map(([title, v]) => `
+      <div class="brow">
+        <span class="lbl">${esc(title)}</span>
+        <span class="num">${esc(v.n)}</span>
+        <span class="track"><span class="fill ${esc(v.severity)}"
+          style="width:${Math.round(100 * v.n / top)}%"></span></span>
+      </div>`).join("")}</div>`;
+}
+
+function chips() {
+  const options = [["all", "all runs"], ["diverged", "diverged"], ["clean", "clean"]];
+  for (const a of DATA.agents || []) options.push([`agent:${a}`, a]);
+  return `<div class="chips">${options.map(([id, label]) =>
+    `<button class="chip" data-filter="${esc(id)}"
+      aria-pressed="${FILTER === id}">${esc(label)}</button>`).join("")}</div>`;
+}
+
+function keep(run) {
+  if (FILTER === "diverged") return isDiverged(run);
+  if (FILTER === "clean") return !isDiverged(run);
+  if (FILTER.startsWith("agent:")) return run.agent === FILTER.slice(6);
+  return true;
+}
+
 function card(run) {
   const findings = run.findings.length
     ? run.findings.slice(0, 2).map(f =>
@@ -220,18 +354,19 @@ function card(run) {
          <span>${esc(f.title)}</span></div>`).join("")
     : `<div class="nofind">Summary matches the trace.</div>`;
   const facts = [
+    run.agent,
     `${run.files_written} written`,
     `${run.commands} command${run.commands === 1 ? "" : "s"}`,
     run.duration_ms ? `${(run.duration_ms / 1000).toFixed(1)}s` : null,
-    run.cost ? `${run.cost.toFixed(3)} coins` : null,
   ].filter(Boolean);
   const strip = run.strip.length
     ? `<div class="strip" aria-hidden="true">${run.strip.map(s =>
         `<i class="${esc(s)}"></i>`).join("")}</div>` : "";
 
-  return `<button class="card ${esc(run.verdict)}${FRESH.has(run.name) ? " fresh" : ""}" data-run="${esc(run.name)}">
+  return `<button class="card ${esc(run.verdict)}${FRESH.has(run.name) ? " fresh" : ""}"
+      data-run="${esc(run.name)}">
     <span class="card-top">
-      <span class="name">${esc(run.name)}</span>
+      <span class="name">${esc(titleOf(run))}</span>
       ${run.label ? `<span class="tag">${esc(run.label)}</span>` : ""}
       <span class="pill ${esc(run.verdict)}">${esc(run.verdict)}</span>
     </span>
@@ -242,23 +377,21 @@ function card(run) {
 
 function overview() {
   const order = { diverged: 0, clean: 1 };
-  const runs = [...DATA.runs].sort((a, b) =>
-    (order[a.verdict] - order[b.verdict]) || a.name.localeCompare(b.name));
-  return `
-    <div class="brand">Receipts</div>
+  const runs = [...DATA.runs].filter(keep).sort((a, b) =>
+    (order[a.verdict] - order[b.verdict]) || titleOf(a).localeCompare(titleOf(b)));
+  return chrome("") + `<div class="wrap">
     <h1>${esc(DATA.headline)}</h1>
     <p class="sub">${esc(DATA.subhead)}</p>
-    ${DATA.live ? `<div class="live" id="live"><span class="dot"></span>
-       <span id="live-text">watching for new traces</span></div>` : ""}
     ${statsBlock()}
-    <h2>Runs</h2>
+    ${matrix()}
+    ${detectors()}
+    <h2>Runs <small>${esc(runs.length)} shown</small></h2>
+    ${chips()}
     <div class="grid">${runs.length
       ? runs.map(card).join("")
-      : `<div class="nofind">No traces yet.</div>`}</div>
-    ${footer()}`;
+      : `<div class="nofind">No runs match this filter.</div>`}</div>
+    ${footer()}</div>`;
 }
-
-/* ---------------- one run ---------------- */
 
 function metaRow(run) {
   const cells = [
@@ -282,7 +415,8 @@ function findingsBlock(run) {
       <p>${esc(f.detail)}</p>
       <ul class="evidence">${(f.evidence || []).map(e => `
         <li><button class="ev" ${e.seq >= 0 ? `data-seq="${esc(e.seq)}"` : ""}>
-          <span class="ev-head"><span class="ref">${e.seq >= 0 ? "line " + esc(e.seq) : "summary"}</span>
+          <span class="ev-head"><span class="ref">${
+            e.seq >= 0 ? "line " + esc(e.seq) : "summary"}</span>
             &nbsp;· ${esc(e.label)}</span>
           ${e.excerpt ? `<span class="ev-body">${esc(e.excerpt)}</span>` : ""}
         </button></li>`).join("")}</ul>
@@ -291,27 +425,31 @@ function findingsBlock(run) {
 
 function timelineBlock(run) {
   if (!run.timeline.length) return "";
-  return `<section><h2>Execution trace</h2><ol class="tl">${run.timeline.map(r => `
+  return `<section><h2>Execution trace
+      <small>line numbers are real — <code>sed -n '&lt;n&gt;p'</code> returns the record</small></h2>
+    <ol class="tl">${run.timeline.map(r => `
     <li id="ev-${esc(r.seq)}" class="${r.flagged ? "flagged" : ""}">
       <span class="seq">${esc(r.seq)}</span>
       <span class="rail" aria-hidden="true"></span>
       <span class="what"><span class="verb">${esc(r.kind)}</span>${esc(r.detail)}${
-        r.test ? '<span class="test-tag">test</span>' : ""}</span>
+        r.test ? '<span class="test-tag">test</span>' : ""}${
+        r.recovered ? '<span class="rec-tag">unreported</span>' : ""}</span>
       <span class="out ${esc(r.outcome)}">${esc(r.outcome)}</span>
     </li>`).join("")}</ol></section>`;
 }
 
 function detail(run) {
-  const diverged = run.verdict === "diverged";
   const failed = run.commands_detail.filter(c => c.outcome === "error").length;
   const actual = `${run.files_written} file(s) written · ${run.commands} command(s) run`
     + (failed ? ` · ${failed} failed` : "");
-  return `
+  return chrome(titleOf(run)) + `<div class="wrap">
     <button class="back" data-back>← all runs</button>
     <header class="top">
       <div>
-        <div class="brand">${esc(run.name)}</div>
-        <h1>${diverged ? "The summary and the trace disagree" : "Summary matches the trace"}</h1>
+        <div class="brand">${esc(run.agent)} · ${esc(titleOf(run))}</div>
+        <h1>${isDiverged(run)
+          ? "The summary and the trace disagree"
+          : "Summary matches the trace"}</h1>
       </div>
       <div class="spacer"></div>
       <div class="verdict ${esc(run.verdict)}">${esc(run.verdict)}</div>
@@ -325,18 +463,8 @@ function detail(run) {
     </section>
     ${findingsBlock(run)}
     ${timelineBlock(run)}
-    ${footer()}`;
+    ${footer()}</div>`;
 }
-
-function footer() {
-  return `<footer>
-    Every verdict is derived from the agent's own execution trace — no second model,
-    no judgement call. Each finding cites the events that prove it.<br>
-    Receipts v${esc(DATA.receipts_version)}${DATA.generated ? " · " + esc(DATA.generated) : ""}.
-  </footer>`;
-}
-
-/* ---------------- routing ---------------- */
 
 const app = document.getElementById("app");
 
@@ -348,8 +476,12 @@ function draw() {
 }
 
 app.addEventListener("click", (event) => {
+  const chip = event.target.closest("[data-filter]");
+  if (chip) { FILTER = chip.dataset.filter; draw(); return; }
+
   const card = event.target.closest("[data-run]");
   if (card) { location.hash = "run=" + encodeURIComponent(card.dataset.run); return; }
+
   if (event.target.closest("[data-back]")) { location.hash = ""; return; }
 
   const ev = event.target.closest("[data-seq]");
@@ -369,7 +501,6 @@ draw();
 if (DATA.live) {
   let revision = DATA.revision;
   let missed = 0;
-
   const setState = (stale, text) => {
     const el = document.getElementById("live");
     if (!el) return;
@@ -380,11 +511,10 @@ if (DATA.live) {
 
   setInterval(async () => {
     try {
-      const head = await fetch("/api/revision", { cache: "no-store" });
-      const { revision: latest } = await head.json();
+      const { revision: latest } =
+        await (await fetch("/api/revision", { cache: "no-store" })).json();
       missed = 0;
       if (latest === revision) { setState(false, "watching for new traces"); return; }
-
       const before = new Set(DATA.runs.map(r => r.name));
       const next = await (await fetch("/api/audit", { cache: "no-store" })).json();
       FRESH = new Set(next.runs.map(r => r.name).filter(n => !before.has(n)));

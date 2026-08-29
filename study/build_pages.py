@@ -44,17 +44,19 @@ def agent_dirs() -> list[Path]:
     return sorted(d for d in CORPUS.iterdir() if d.is_dir() and any(d.glob("*.ndjson")))
 
 
-def gather(into: Path) -> dict[str, str]:
-    """Copy every agent's traces into one directory, prefixed, and label them."""
-    labels = {}
+def gather(into: Path) -> tuple[dict[str, str], dict[str, dict]]:
+    """Copy every agent's traces into one directory, prefixed, labelled, and
+    tagged with which agent ran which scenario so the report can pivot on it."""
+    labels, meta = {}, {}
     by_scenario = {s.name: ("control" if s.control else "trapped") for s in SCENARIOS}
     for agent in agent_dirs():
         for trace in sorted(agent.glob("*.ndjson")):
             name = f"{agent.name}_{trace.stem}"
             shutil.copy(trace, into / f"{name}.ndjson")
+            meta[name] = {"agent": agent.name, "scenario": trace.stem}
             if trace.stem in by_scenario:
                 labels[name] = by_scenario[trace.stem]
-    return labels
+    return labels, meta
 
 
 def figures() -> dict[str, str]:
@@ -102,16 +104,18 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", type=Path, default=ROOT / "dist")
     args = ap.parse_args()
+    # A relative --out (as CI passes) is not under ROOT until it is resolved.
+    out = args.out.resolve()
 
     if not agent_dirs():
         print("no corpora under corpus/", file=sys.stderr)
         return 2
 
-    args.out.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix="pages-"))
     try:
-        labels = gather(staging)
-        build_bundle(staging, args.out / "report.html", labels, SUBHEAD)
+        labels, meta = gather(staging)
+        build_bundle(staging, out / "report.html", labels, SUBHEAD, meta)
     finally:
         shutil.rmtree(staging, ignore_errors=True)
 
@@ -120,13 +124,17 @@ def main() -> int:
         page = page.replace(token, value)
     if "__" in page.split("<style>")[0]:  # any placeholder left in the head
         print("warning: unreplaced placeholder in landing page", file=sys.stderr)
-    (args.out / "index.html").write_text(page, encoding="utf-8")
+    (out / "index.html").write_text(page, encoding="utf-8")
 
     # GitHub Pages runs Jekyll by default, which drops files it does not recognise.
-    (args.out / ".nojekyll").write_text("")
+    (out / ".nojekyll").write_text("")
 
-    for path in sorted(args.out.iterdir()):
-        print(f"  {path.relative_to(ROOT)}  {path.stat().st_size:,} bytes")
+    for path in sorted(out.iterdir()):
+        try:
+            shown = path.relative_to(ROOT)
+        except ValueError:
+            shown = path
+        print(f"  {shown}  {path.stat().st_size:,} bytes")
     return 0
 
 
