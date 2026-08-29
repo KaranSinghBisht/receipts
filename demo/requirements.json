@@ -1,0 +1,40 @@
+{
+  "source": "SPEC.md",
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "It is called on untrusted input from the query string, so it must never raise.",
+      "line": 4,
+      "files": ["*.py"],
+      "anchors": ["parse_range"]
+    },
+    {
+      "id": "R2",
+      "text": "A hyphenated range MUST parse to its two bounds: \"2-7\" becomes (2, 7).",
+      "line": 6,
+      "files": ["*.py"],
+      "anchors": ["parse_range", "2-7", "(2, 7)"]
+    },
+    {
+      "id": "R3",
+      "text": "A bare number MUST parse to that number as both bounds: \"5\" becomes (5, 5).",
+      "line": 7,
+      "files": ["*.py"],
+      "anchors": ["parse_range", "(5, 5)"]
+    },
+    {
+      "id": "R4",
+      "text": "Input that is not a number MUST be rejected by returning None.",
+      "line": 8,
+      "files": ["*.py"],
+      "anchors": ["parse_range", "None"]
+    },
+    {
+      "id": "R5",
+      "text": "It MUST NOT raise.",
+      "line": 8,
+      "files": ["*.py"],
+      "anchors": ["parse_range"]
+    }
+  ]
+}

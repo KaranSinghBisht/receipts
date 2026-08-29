@@ -15,6 +15,7 @@ from .detectors.base import Severity
 from .html import write as write_html
 from .render import render
 from .report import build
+from .requirements import BadRequirements, load as load_spec
 from .bundle import NoTraces, build_bundle, load_labels
 from .serve import serve
 
@@ -33,6 +34,10 @@ def _parser() -> argparse.ArgumentParser:
         help="NDJSON trace from `bob run --format stream-json`, or a directory of them",
     )
     parser.add_argument("--workspace", type=Path, default=None, help="repo the agent worked in")
+    parser.add_argument(
+        "--spec", type=Path, default=None, metavar="FILE",
+        help="requirements JSON to hold the run to (see `bob run --mode requirements`)",
+    )
     parser.add_argument("--json", action="store_true", help="emit the evidence bundle as JSON")
     parser.add_argument(
         "--html", type=Path, default=None, metavar="FILE",
@@ -113,7 +118,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"receipts: {exc}", file=sys.stderr)
         return EXIT_ERROR
 
-    findings = run(trace, args.workspace)
+    try:
+        spec = load_spec(args.spec) if args.spec else None
+    except BadRequirements as exc:
+        print(f"receipts: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+
+    findings = run(trace, args.workspace, spec)
     report = build(trace, build_actions(trace), findings)
 
     if args.json:

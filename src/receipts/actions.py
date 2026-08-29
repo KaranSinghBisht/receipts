@@ -11,7 +11,7 @@ import re
 from dataclasses import dataclass
 from enum import StrEnum
 
-from . import shell
+from . import diffs, shell
 from .model import Outcome, ToolUse, Trace
 
 
@@ -38,6 +38,8 @@ class Action:
     outcome: Outcome = Outcome.UNKNOWN
     output: str = ""
     writes: tuple[str, ...] = ()
+    content: str = ""
+    """The text this call put into the file: a whole body, or a diff.""" 
 
     @property
     def wrote_anything(self) -> bool:
@@ -83,6 +85,9 @@ _TOOL_KINDS: dict[str, ActionKind] = {
 # `command` and `file_path`. The remaining keys are tolerated, not relied on.
 _COMMAND_KEYS = ("command", "cmd", "command_line", "script")
 _PATH_KEYS = ("path", "file_path", "filePath", "target_file", "file")
+# What the call actually wrote. Bob sends `content` or `diff`; Claude Code sends
+# `content` or `new_string`. Needed to check a change against a requirement.
+_CONTENT_KEYS = ("content", "diff", "new_string", "new_str")
 
 
 def kind_of(tool_name: str) -> ActionKind:
@@ -98,6 +103,22 @@ def target_of(use: ToolUse) -> str:
         if isinstance(value, str) and value.strip():
             return value.strip()
     return ""
+
+
+def content_of(use: ToolUse) -> str:
+    """What the write put into the file -- the added side of an edit only.
+
+    A diff's deleted lines are not something the agent wrote, and counting them
+    would make an agent that removed `return None` look like one that added it.
+    """
+    if kind_of(use.name) is not ActionKind.WRITE_FILE:
+        return ""
+    parts = [
+        diffs.added(str(use.params[key]))
+        for key in _CONTENT_KEYS
+        if isinstance(use.params.get(key), str)
+    ]
+    return "\n".join(p for p in parts if p)
 
 
 def _writes_of(kind: ActionKind, target: str) -> tuple[str, ...]:
@@ -125,6 +146,7 @@ def actions(trace: Trace) -> list[Action]:
                 outcome=result.outcome if result else Outcome.UNKNOWN,
                 output=(result.output or result.error) if result else "",
                 writes=_writes_of(kind, target),
+                content=content_of(use),
             )
         )
     return paired

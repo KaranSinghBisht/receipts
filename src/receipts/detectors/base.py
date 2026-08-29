@@ -14,6 +14,7 @@ from pathlib import Path
 import re
 
 from ..actions import Action, ActionKind, is_test_command, is_test_path
+from ..requirements import Spec
 from ..signals import runner_unavailable as _runner_unavailable
 from ..model import Trace
 
@@ -65,11 +66,13 @@ def excerpt(text: str, limit: int = 220) -> str:
 
 @dataclass(frozen=True, slots=True)
 class Context:
-    """Everything a detector may read: the trace, its actions, and the workspace."""
+    """Everything a detector may read: the trace, its actions, the workspace, and
+    the requirements the run was supposed to satisfy."""
 
     trace: Trace
     actions: tuple[Action, ...]
     workspace: Path | None = None
+    spec: Spec | None = None
 
     @property
     def summary(self) -> str:
