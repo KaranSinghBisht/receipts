@@ -1,8 +1,12 @@
 # Example: gate a pull request on what the agent actually did.
 #
-# Not enabled here -- this repository has no agent writing its code. Copy it into
-# a repository that does. The job assumes the trace was captured when the agent
-# ran, e.g.
+# Kept outside .github/workflows on purpose. It lived there briefly, with a
+# comment claiming it was "deliberately not enabled" -- which was wrong, because
+# GitHub runs every file in that directory regardless of its name, and it failed
+# on every push. An unverified claim about our own configuration, in the repo of
+# a tool built to catch unverified claims. Copy this into a repository that has
+# an agent writing its code. The job assumes the trace was captured when the
+# agent ran, e.g.
 #
 #     bob run --format stream-json "<task>" > traces/${{ github.sha }}.ndjson
 #
@@ -18,8 +22,8 @@ jobs:
     if: hashFiles('traces/*.ndjson') != ''
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - run: pip install receipts-audit  # or: pip install git+https://…/receipts
@@ -33,7 +37,7 @@ jobs:
             receipts "$trace" --spec requirements.json --workspace . --fail-on high
           done
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: receipts-report
