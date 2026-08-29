@@ -1,20 +1,36 @@
 """IBM Bob Shell adapter.
 
-Parses the NDJSON emitted by `bob run --format stream-json`. Documented event
-types and fields (bob.ibm.com/docs/shell):
+Parses the NDJSON emitted by `bob run --format stream-json`. The shapes below
+were read off the emitter itself in Bob Shell 2.0.1 (`bobshell/dist/bob.js`,
+the `stream-json-renderer` class), not inferred from prose documentation:
 
-    message      role, content, isReasoning?
+    message      role, content, isReasoning?     <- one event PER STREAM DELTA
     tool_use     tool_name, tool_id, parameters
     tool_result  tool_id, status, output?, error?
     error        severity, message
-    result       status, stats, last_message
+    result       status, stats
 
-IBM does not publish the value set for `tool_result.status`, so unrecognised
-values normalise to `Outcome.UNKNOWN` rather than being guessed as success.
+Three properties of that emitter drive this module:
+
+* Assistant text arrives as deltas. Bob invokes its stream hook per chunk and
+  accumulates with `content += chunk`, so one reply becomes dozens of `message`
+  events. We re-join consecutive assistant deltas. Without this, the "closing
+  summary" is whichever fragment happened to arrive last, and the whole
+  claim-versus-reality comparison compares against a few stray characters.
+* `tool_result.error` is an object (`{type, message}`), and a failed call omits
+  `output` entirely -- its text lands in `error.message`. Detectors read
+  `output`, so a failed call's text is folded into it.
+* `result` carries no `last_message`, so the closing summary can only come from
+  the coalesced assistant messages. The field is still read in case a later
+  Bob release adds it.
+
+Subagent activity is not recoverable from this stream: Bob routes
+`subagent_start` / `subagent_end` to its debug logger rather than stdout.
 """
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 from ..model import AgentError, Event, Message, Outcome, RunResult, ToolResult, ToolUse, Trace
@@ -44,12 +60,23 @@ def _text(value: Any) -> str:
     return str(value)
 
 
+def _error_text(value: Any) -> str:
+    """Bob reports tool failures as `{type: "tool_error", message: "..."}`."""
+    if isinstance(value, dict):
+        return _text(value.get("message") or value.get("error"))
+    return _text(value)
+
+
 def matches(records: list[dict[str, Any]]) -> bool:
     """True when the stream looks like Bob's, not another agent's."""
     for record in records:
-        if record.get("type") == "tool_use" and "tool_name" in record:
+        kind = record.get("type")
+        if kind == "tool_use" and "tool_name" in record:
             return True
-        if record.get("type") == "result" and "last_message" in record:
+        if kind == "message" and "role" in record and isinstance(record.get("content"), str):
+            return True
+        stats = record.get("stats")
+        if kind == "result" and isinstance(stats, dict) and "session_costs" in stats:
             return True
     return False
 
@@ -72,12 +99,13 @@ def parse_event(record: dict[str, Any], seq: int) -> Event | None:
             params=params if isinstance(params, dict) else {},
         )
     if kind == "tool_result":
-        error = _text(record.get("error"))
+        error = _error_text(record.get("error"))
         return ToolResult(
             seq=seq,
             tool_id=_text(record.get("tool_id")),
             outcome=_outcome(record.get("status"), bool(error)),
-            output=_text(record.get("output")),
+            # A failed call omits `output`; keep the text where detectors look.
+            output=_text(record.get("output")) or error,
             error=error,
         )
     if kind == "error":
@@ -97,6 +125,34 @@ def parse_event(record: dict[str, Any], seq: int) -> Event | None:
     return None
 
 
+def _joinable(prev: Event | None, event: Event) -> bool:
+    """Whether `event` is a continuation of the same streamed assistant turn."""
+    return (
+        isinstance(event, Message)
+        and isinstance(prev, Message)
+        and prev.role == event.role == "assistant"
+        and prev.is_reasoning == event.is_reasoning
+    )
+
+
+def coalesce(events: list[Event]) -> list[Event]:
+    """Re-join Bob's per-delta assistant messages into whole turns.
+
+    A turn ends at the first event that is not another assistant delta of the
+    same kind -- a tool call, a tool result, a user message, or a switch
+    between reasoning and reply text.
+    """
+    merged: list[Event] = []
+    for event in events:
+        prev = merged[-1] if merged else None
+        if _joinable(prev, event):
+            assert isinstance(prev, Message) and isinstance(event, Message)
+            merged[-1] = replace(prev, content=prev.content + event.content)
+            continue
+        merged.append(event)
+    return merged
+
+
 def parse(records: list[dict[str, Any]]) -> Trace:
     events = [e for i, r in enumerate(records) if (e := parse_event(r, i)) is not None]
-    return Trace(events=tuple(events), source=SOURCE)
+    return Trace(events=tuple(coalesce(events)), source=SOURCE)
