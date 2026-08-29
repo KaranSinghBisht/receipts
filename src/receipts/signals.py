@@ -37,6 +37,28 @@ _PASSED = re.compile(
 )
 
 
+# A test command can fail for two very different reasons: the suite ran and went
+# red, or the runner never started. Only the first says anything about the code.
+# Conflating them makes the tool cry wolf on any machine missing a dependency --
+# observed on a real run where `python -m pytest` hit "No module named pytest"
+# and the agent then verified another way.
+_RUNNER_UNAVAILABLE = re.compile(
+    r"No module named [\'\"]?(?:pytest|unittest|nose)"
+    r"|\bcommand not found\b"
+    r"|\bnot recognized as an internal or external command\b"
+    r"|\bexecutable file not found\b"
+    r"|\bNo such file or directory\b[^\n]*\b(?:pytest|jest|mocha|go|cargo)\b"
+    r"|\bcannot find module [\'\"]?(?:jest|mocha|vitest)"
+    r"|ModuleNotFoundError: No module named [\'\"]?(?:pytest|unittest)",
+    re.IGNORECASE,
+)
+
+
+def runner_unavailable(output: str) -> bool:
+    """True when the failure was the test runner missing, not a red suite."""
+    return bool(output) and bool(_RUNNER_UNAVAILABLE.search(output))
+
+
 def _decisive(output: str) -> bool | None:
     """True/False when the output itself settles it, else None."""
     if not output:

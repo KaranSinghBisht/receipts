@@ -54,7 +54,9 @@ class Action:
 _TOOL_KINDS: dict[str, ActionKind] = {
     # IBM Bob
     "execute_command": ActionKind.RUN_COMMAND,
-    "write_to_file": ActionKind.WRITE_FILE,
+    "write_file": ActionKind.WRITE_FILE,  # what Bob Shell 2.0.1 actually emits
+    "write_to_file": ActionKind.WRITE_FILE,  # the name IBM's docs give
+
     "apply_diff": ActionKind.WRITE_FILE,
     "insert_content": ActionKind.WRITE_FILE,
     "read_file": ActionKind.READ_FILE,
@@ -72,8 +74,8 @@ _TOOL_KINDS: dict[str, ActionKind] = {
     "glob": ActionKind.SEARCH,
 }
 
-# Bob does not publish the key names inside `parameters`, so each adapter probes a
-# short candidate list. Confirm against a real trace and prune.
+# Confirmed against real traces: Bob uses `command` and `path`; Claude Code uses
+# `command` and `file_path`. The remaining keys are tolerated, not relied on.
 _COMMAND_KEYS = ("command", "cmd", "command_line", "script")
 _PATH_KEYS = ("path", "file_path", "filePath", "target_file", "file")
 
@@ -138,5 +140,25 @@ def is_test_path(path: str) -> bool:
     return bool(_TEST_PATH.search(path))
 
 
+# Agents routinely skip the runner and import the test functions directly, e.g.
+#   python3 -c "from test_cart import test_total; test_total()"
+# That executes the project's tests and must count as verification. An ad-hoc
+# spot-check of application code (`python -c "from text import slug; ..."`) does
+# not, which is why a test symbol has to appear as well.
+# `-c` / `-e` take the script inline; a bare `-` reads it from a heredoc, which
+# is how agents run multi-line checks. Both are the same thing to us.
+_INLINE_EXEC = re.compile(
+    r"\b(python[0-9.]*|node|deno|ruby|perl)\b[^\n]*?\s-(?:c|e)\b"
+    r"|\b(python[0-9.]*|node|deno|ruby|perl)\s+-\s*(?:<<|$)",
+    re.IGNORECASE | re.MULTILINE,
+)
+_TEST_SYMBOL = re.compile(
+    r"\btest_[A-Za-z0-9_]+|\bfrom\s+tests?[._A-Za-z0-9]*\s+import|\bimport\s+tests?\b",
+    re.IGNORECASE,
+)
+
+
 def is_test_command(command: str) -> bool:
-    return bool(_TEST_COMMAND.search(command))
+    if _TEST_COMMAND.search(command):
+        return True
+    return bool(_INLINE_EXEC.search(command) and _TEST_SYMBOL.search(command))

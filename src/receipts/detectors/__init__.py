@@ -10,7 +10,13 @@ from pathlib import Path
 
 from ..actions import actions as build_actions
 from ..model import Trace
-from . import success_over_failure, test_edited_after_failure, tests_absent, unresolved_failures
+from . import (
+    success_over_failure,
+    test_edited_after_failure,
+    tests_absent,
+    unresolved_failures,
+    unverified_claim,
+)
 from .base import Context, Evidence, Finding, Severity
 
 DETECTORS = (
@@ -18,6 +24,7 @@ DETECTORS = (
     success_over_failure,
     tests_absent,
     unresolved_failures,
+    unverified_claim,
 )
 
 __all__ = ["Context", "Evidence", "Finding", "Severity", "DETECTORS", "run", "build_context"]

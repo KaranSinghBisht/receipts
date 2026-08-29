@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ..signals import command_failed
+from ..signals import command_failed, runner_unavailable
 from .base import Context, Evidence, Finding, Severity, excerpt
 from .claims import claims_tests_pass
 
@@ -10,7 +10,9 @@ NAME = "passing_claimed_over_failure"
 
 
 def detect(ctx: Context) -> list[Finding]:
-    runs = ctx.test_runs()
+    # A run that died because the runner was missing is not a test result, and
+    # must not stand in for one -- the agent may have verified another way after.
+    runs = [r for r in ctx.test_runs() if not runner_unavailable(r.output)]
     if not runs or not claims_tests_pass(ctx.summary):
         return []
 

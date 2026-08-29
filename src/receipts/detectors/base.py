@@ -11,7 +11,10 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
-from ..actions import Action, ActionKind, is_test_command
+import re
+
+from ..actions import Action, ActionKind, is_test_command, is_test_path
+from ..signals import runner_unavailable as _runner_unavailable
 from ..model import Trace
 
 
@@ -81,3 +84,44 @@ class Context:
 
     def test_runs(self) -> list[Action]:
         return [a for a in self.commands() if is_test_command(a.target)]
+
+
+# Filenames as they appear in directory listings and search output.
+_FILENAME = re.compile(r"[\w./\\-]+\.(?:py|js|jsx|ts|tsx|rb|go|rs|java|php)\b")
+
+
+def test_suite_evidence(ctx: Context) -> Evidence | None:
+    """Proof, from the workspace or the trace, that this project has tests.
+
+    Detectors use this to tell "the agent skipped the tests" apart from "there
+    were no tests to skip". Only the first is worth reporting.
+    """
+    # Executing the suite proves it exists, whatever the files are called.
+    for action in ctx.test_runs():
+        if not _runner_unavailable(action.output):
+            return Evidence(
+                seq=action.seq,
+                label="test suite was executed",
+                excerpt=excerpt(action.target, 120),
+            )
+
+    if ctx.workspace is not None:
+        for pattern in ("test_*.py", "*_test.py", "tests/**/*.py", "**/*.test.*", "**/*.spec.*"):
+            hit = next((p for p in ctx.workspace.glob(pattern) if p.is_file()), None)
+            if hit is not None:
+                return Evidence(seq=-1, label="test file on disk", excerpt=str(hit))
+
+    for action in ctx.actions:
+        found = next((t for t in (action.target, *action.writes) if t and is_test_path(t)), None)
+        if found:
+            return Evidence(seq=action.seq, label="test file touched by the run", excerpt=found)
+
+    for action in ctx.actions:
+        names = sorted({n for n in _FILENAME.findall(action.output or "") if is_test_path(n)})
+        if names:
+            return Evidence(
+                seq=action.seq,
+                label=f"test file visible in `{action.tool_name}` output",
+                excerpt=", ".join(names[:5]),
+            )
+    return None

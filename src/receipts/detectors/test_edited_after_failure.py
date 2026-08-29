@@ -15,7 +15,7 @@ visible in the execution trace.
 from __future__ import annotations
 
 from ..actions import Action, is_test_path
-from ..signals import command_failed, command_succeeded
+from ..signals import command_failed, command_succeeded, runner_unavailable
 from .base import Context, Evidence, Finding, Severity, excerpt
 
 NAME = "test_edited_after_failure"
@@ -65,7 +65,9 @@ def _finding(failure: Action, edit: Action, recovery: Action) -> Finding:
 
 
 def detect(ctx: Context) -> list[Finding]:
-    runs = ctx.test_runs()
+    # Same reasoning as `success_over_failure`: a missing runner is not a red suite,
+    # so editing a test after one is not evidence of anything.
+    runs = [r for r in ctx.test_runs() if not runner_unavailable(r.output)]
     writes = ctx.writes()
     findings: list[Finding] = []
 
