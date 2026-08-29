@@ -16,6 +16,7 @@ from .html import write as write_html
 from .render import render
 from .report import build
 from .requirements import BadRequirements, load as load_spec
+from . import cloud
 from .bundle import NoTraces, build_bundle, load_labels
 from .serve import serve
 
@@ -102,7 +103,48 @@ def _build_bundle(args) -> int:
     return EXIT_OK
 
 
+_SUBCOMMANDS = ("login", "logout", "whoami", "push")
+
+
+def _run_subcommand(argv: list[str]) -> int:
+    """`receipts login|logout|whoami|push` — connecting a machine to a workspace.
+
+    Kept out of argparse so that `receipts <trace>` stays the primary form: the
+    audit is the tool, and pushing it somewhere is an extra.
+    """
+    name, rest = argv[0], argv[1:]
+    try:
+        if name == "login":
+            return cloud.login()
+        if name == "logout":
+            return cloud.logout()
+        if name == "whoami":
+            return cloud.whoami()
+
+        if not rest:
+            print("receipts push: needs a trace file", file=sys.stderr)
+            return EXIT_ERROR
+        trace_path = Path(rest[0])
+        trace = load(trace_path)
+        findings = run(trace, None, None)
+        report = build(trace, build_actions(trace), findings)
+        return cloud.push(report.as_dict(), trace_path.stem)
+    except cloud.CloudError as exc:
+        print(f"receipts: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+    except (UnknownTraceFormat, ValueError, OSError) as exc:
+        print(f"receipts: {exc}", file=sys.stderr)
+        return EXIT_ERROR
+    except KeyboardInterrupt:
+        print("\nreceipts: cancelled", file=sys.stderr)
+        return EXIT_ERROR
+
+
 def main(argv: list[str] | None = None) -> int:
+    raw = list(sys.argv[1:] if argv is None else argv)
+    if raw and raw[0] in _SUBCOMMANDS:
+        return _run_subcommand(raw)
+
     args = _parser().parse_args(argv)
 
     if args.trace.is_dir():
