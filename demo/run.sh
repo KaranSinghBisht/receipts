@@ -10,6 +10,7 @@
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
+export PATH="$PWD/.venv/bin:$PATH"
 
 : "${BOB_API_KEY:?set BOB_API_KEY (Bob IDE -> API Keys) before running the demo}"
 
