@@ -9,35 +9,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
 :root{
-  --ground:#FAFBFC; --surface:#FFFFFF; --surface-2:#F1F4F8;
-  --ink:#11151C; --ink-2:#3C4657; --ink-dim:#68738A;
-  --rule:#DCE2EB; --rule-soft:#EBEFF5;
-  --bad:#B3261E; --bad-soft:#FBE9E7; --bad-line:#E0776E;
-  --warn:#9A5B00; --warn-soft:#FDF1DF;
-  --good:#0B6E4F; --good-soft:#E2F2EC; --good-line:#4FAE8C;
+  --ground:#F3F4F6; --surface:#FFFFFF; --surface-2:#FAFAFB;
+  --ink:#15171C; --ink-2:#5A6170; --ink-dim:#9AA1AD;
+  --rule:#E8EAEE; --rule-soft:#F0F1F4;
+  --bad:#C0362C; --bad-soft:#FBEEEC; --bad-line:#DB8A83;
+  --warn:#93601A; --warn-soft:#FAF1E1;
+  --good:#16694C; --good-soft:#E7F2ED; --good-line:#5FA98B;
   --accent:#0F62FE; --focus:#FFD54A33;
   --f-sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --ground:#0A0D12; --surface:#111620; --surface-2:#161C27;
-    --ink:#E7ECF3; --ink-2:#B4BECD; --ink-dim:#8590A3;
-    --rule:#232A37; --rule-soft:#1B212C;
-    --bad:#F2857A; --bad-soft:#2A1614; --bad-line:#A64B41;
-    --warn:#E3A45A; --warn-soft:#241B10;
-    --good:#4FC4A0; --good-soft:#0F2620; --good-line:#2E7A63;
-    --accent:#6E9BFF; --focus:#FFD54A22;
-  }
-}
-:root[data-theme="dark"]{
-  --ground:#0A0D12; --surface:#111620; --surface-2:#161C27;
-  --ink:#E7ECF3; --ink-2:#B4BECD; --ink-dim:#8590A3;
-  --rule:#232A37; --rule-soft:#1B212C;
-  --bad:#F2857A; --bad-soft:#2A1614; --bad-line:#A64B41;
-  --warn:#E3A45A; --warn-soft:#241B10;
-  --good:#4FC4A0; --good-soft:#0F2620; --good-line:#2E7A63;
-  --accent:#6E9BFF; --focus:#FFD54A22;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--f-sans);
@@ -70,7 +50,7 @@ h2 small{font-family:var(--f-sans);font-size:12.5px;letter-spacing:0;text-transf
   color:var(--ink-dim);font-weight:400}
 
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:1px;
-  margin:26px 0 0;background:var(--rule);border:1px solid var(--rule);border-radius:6px;
+  margin:26px 0 0;background:var(--rule);border:1px solid var(--rule);border-radius:16px;
   overflow:hidden}
 .stat{background:var(--surface);padding:16px 18px}
 .stat .n{font-family:var(--f-mono);font-size:1.8rem;font-weight:600;line-height:1;
@@ -80,7 +60,7 @@ h2 small{font-family:var(--f-sans);font-size:12.5px;letter-spacing:0;text-transf
 .stat.bad .n{color:var(--bad)} .stat.good .n{color:var(--good)}
 
 .matrix{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);
-  border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+  border:1px solid var(--rule);border-radius:14px;overflow:hidden}
 .matrix th,.matrix td{padding:0;text-align:left;border-bottom:1px solid var(--rule-soft)}
 .matrix tr:last-child th,.matrix tr:last-child td{border-bottom:0}
 .matrix thead th{font-family:var(--f-mono);font-size:10.5px;font-weight:600;letter-spacing:.12em;
@@ -104,7 +84,7 @@ h2 small{font-family:var(--f-sans);font-size:12.5px;letter-spacing:0;text-transf
   font-variant-numeric:tabular-nums}
 
 .bars{display:grid;gap:11px;background:var(--surface);border:1px solid var(--rule);
-  border-radius:6px;padding:18px 20px}
+  border-radius:14px;padding:18px 20px}
 .brow{display:grid;grid-template-columns:1fr 40px;gap:6px 14px;align-items:center}
 .brow .lbl{font-size:13.5px}
 .brow .track{grid-column:1/-1;height:6px;border-radius:3px;background:var(--surface-2);
@@ -116,7 +96,7 @@ h2 small{font-family:var(--f-sans);font-size:12.5px;letter-spacing:0;text-transf
 .brow .num{font-family:var(--f-mono);font-size:12px;color:var(--ink-dim);text-align:right;
   font-variant-numeric:tabular-nums}
 .none-note{background:var(--good-soft);border:1px solid color-mix(in srgb,var(--good) 25%,transparent);
-  border-radius:6px;padding:16px 18px;color:var(--good);font-size:14px}
+  border-radius:14px;padding:16px 18px;color:var(--good);font-size:14px}
 
 .chips{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 13px}
 .chip{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;padding:5px 11px;
@@ -124,7 +104,8 @@ h2 small{font-family:var(--f-sans);font-size:12.5px;letter-spacing:0;text-transf
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--ground);border-color:var(--ink)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:13px}
 .card{display:block;width:100%;background:var(--surface);border:1px solid var(--rule);
-  border-left:3px solid var(--rule);border-radius:6px;padding:15px 17px;
+  border-left:3px solid var(--rule);border-radius:14px;padding:15px 17px;
+  box-shadow:0 8px 24px -18px rgba(21,23,28,.14);
   transition:border-color .12s ease,transform .12s ease}
 .card:hover{transform:translateY(-2px);border-color:var(--accent)}
 .card.diverged{border-left-color:var(--bad)}
@@ -174,14 +155,14 @@ header.top h1{font-size:1.45rem;margin:6px 0 0}
 .meta b{display:block;color:var(--ink);font-weight:600;font-size:14px;
   font-variant-numeric:tabular-nums;margin-top:2px}
 .compare{display:grid;grid-template-columns:84px 1fr;gap:10px 16px;background:var(--surface);
-  border:1px solid var(--rule);border-radius:6px;padding:18px}
+  border:1px solid var(--rule);border-radius:14px;padding:18px}
 .compare dt{font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.1em;
   text-transform:uppercase;color:var(--ink-dim);padding-top:3px}
 .compare dd{margin:0}
 .claim{font-style:italic;color:var(--ink-2)}
 .actual{font-family:var(--f-mono);font-size:13.5px;font-variant-numeric:tabular-nums}
 .finding{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--rule);
-  border-radius:6px;padding:16px 18px;margin-bottom:12px}
+  border-radius:14px;padding:16px 18px;margin-bottom:12px}
 .finding.high{border-left-color:var(--bad)}
 .finding.medium{border-left-color:var(--warn)}
 .finding h3{margin:0;font-size:1rem;font-weight:600;display:flex;gap:10px;align-items:baseline}
@@ -196,7 +177,7 @@ header.top h1{font-size:1.45rem;margin:6px 0 0}
   padding:7px 9px;margin-top:4px;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere;
   color:var(--ink-2)}
 .empty{background:var(--good-soft);border:1px solid color-mix(in srgb,var(--good) 25%,transparent);
-  border-radius:6px;padding:18px;color:var(--good);font-size:14px}
+  border-radius:14px;padding:18px;color:var(--good);font-size:14px}
 ol.tl{list-style:none;margin:0;padding:0}
 ol.tl li{display:grid;grid-template-columns:52px 24px 1fr auto;gap:12px;align-items:baseline;
   padding:7px 10px;border-radius:3px;scroll-margin-top:80px}

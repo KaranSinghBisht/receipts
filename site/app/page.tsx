@@ -24,7 +24,7 @@ function heroArt(): string | null {
 export default function Home() {
   const art = heroArt();
   return (
-    <main className="sheet mx-auto min-h-screen max-w-[1180px]">
+    <main className="min-h-screen overflow-x-clip">
       <Nav repo={study.repo} />
       <Hero repo={study.repo} diverged={study.diverged} runs={study.runs} art={art} />
       <WorksWith />
