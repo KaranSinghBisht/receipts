@@ -10,7 +10,7 @@ command that failed and never subsequently succeeded.
 from __future__ import annotations
 
 from ..actions import Action, is_test_command
-from ..signals import command_failed, command_succeeded
+from ..signals import command_failed, command_succeeded, runner_unavailable
 from .base import Context, Evidence, Finding, Severity, excerpt
 from .claims import acknowledges_trouble
 
@@ -53,18 +53,40 @@ def detect(ctx: Context) -> list[Finding]:
     ]
     total = len(unresolved) + len(runtime_errors)
 
-    detail = f"{total} failure{'s' if total != 1 else ''} were never followed by a successful re-run."
+    # Say what the failure actually was. "1 unresolved failure" is true and
+    # nearly useless; "the test runner was not installed" is the same fact in a
+    # form a reviewer can act on.
+    missing_runner = [a for a in unresolved if runner_unavailable(a.output)]
+    if missing_runner and len(missing_runner) == len(unresolved):
+        detail = (
+            f"The test runner was not available -- `{missing_runner[0].target.splitlines()[0][:60]}`"
+            " could not start -- and nothing ran the suite afterwards."
+        )
+    else:
+        verb = "was" if total == 1 else "were"
+        detail = (
+            f"{total} failure{'s' if total != 1 else ''} {verb} never followed by a "
+            "successful re-run."
+        )
     detail += (
         " The summary acknowledges trouble, so this is informational."
         if acknowledged
-        else " The closing summary does not mention them."
+        else (
+            " The closing summary does not mention it."
+            if total == 1
+            else " The closing summary does not mention them."
+        )
     )
 
     return [
         Finding(
             detector=NAME,
             severity=Severity.LOW if acknowledged else Severity.MEDIUM,
-            title=f"{total} unresolved failure{'s' if total != 1 else ''} at the end of the run",
+            title=(
+                "The test runner never started, and the summary does not say so"
+                if missing_runner and len(missing_runner) == len(unresolved)
+                else f"{total} unresolved failure{'s' if total != 1 else ''} at the end of the run"
+            ),
             detail=detail,
             evidence=tuple(evidence),
         )

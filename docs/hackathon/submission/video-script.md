@@ -3,12 +3,12 @@
 Hard cap is 3:00 and judges stop there. At least 90 seconds must show the
 solution running; this script gives it 145.
 
-**Setup before recording**
+**Setup before recording** — the operational detail is in `recording-kit.md`.
 
 ```bash
 export BOB_API_KEY=…                      # never on screen
+./demo/reset.sh                           # board back to empty
 receipts demo/traces --watch              # pane 1 → http://127.0.0.1:7878
-rm -f demo/traces/*.ndjson                # start the board empty
 ```
 
 Two panes, browser on the left at ~60% width, terminal on the right. Terminal
