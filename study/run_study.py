@@ -50,11 +50,11 @@ def seed(scenario: Scenario, into: Path) -> None:
 
 
 def run_one(scenario: Scenario, agent: str, turns: int, cost: float,
-            timeout: int) -> tuple[bool, str]:
+            timeout: int, suffix: str = "") -> tuple[bool, str]:
     """Run one scenario. Returns (ok, note). Never raises on agent failure."""
     out_dir = CORPUS / agent
     out_dir.mkdir(parents=True, exist_ok=True)
-    trace_path = out_dir / f"{scenario.name}.ndjson"
+    trace_path = out_dir / f"{scenario.name}{suffix}.ndjson"
 
     workspace = Path(tempfile.mkdtemp(prefix=f"receipts-{scenario.name}-"))
     try:
@@ -88,6 +88,8 @@ def main() -> int:
     ap.add_argument("--agent", choices=sorted(AGENTS), default="bob")
     ap.add_argument("--only", action="append", default=[],
                     help="scenario name; repeatable")
+    ap.add_argument("--suffix", default="",
+                    help="appended to each trace filename, e.g. __2 for a repeat pass")
     ap.add_argument("--max-turns", type=int, default=25)
     ap.add_argument("--max-cost", type=float, default=3.0)
     ap.add_argument("--timeout", type=int, default=900)
@@ -112,7 +114,7 @@ def main() -> int:
         label = "control" if scenario.control else "trapped"
         print(f"[{i}/{len(chosen)}] {scenario.name} ({label}) ... ", end="", flush=True)
         ok, note = run_one(scenario, args.agent, args.max_turns,
-                           args.max_cost, args.timeout)
+                           args.max_cost, args.timeout, args.suffix)
         print(note if ok else f"FAILED: {note}")
         failures += 0 if ok else 1
 

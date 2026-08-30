@@ -100,9 +100,13 @@ def build_payload(
             skipped.append(f"{path.name}: {exc}")
             continue
         report = build(trace, build_actions(trace), run_detectors(trace, None))
-        entries.append(
-            _entry(path.stem, report, labels.get(path.stem), (meta or {}).get(path.stem))
+        entry = _entry(path.stem, report, labels.get(path.stem), (meta or {}).get(path.stem))
+        # What reading this run by hand would cost, and what the audit points at.
+        entry["traceLines"] = sum(1 for line in path.open() if line.strip())
+        entry["citedLines"] = len(
+            {e.seq for f in report.findings for e in f.evidence if e.seq >= 0}
         )
+        entries.append(entry)
 
     if not entries:
         raise NoTraces(f"no parsable traces in {traces} ({'; '.join(skipped[:3])})")
@@ -117,6 +121,8 @@ def build_payload(
             "diverged": diverged,
             "clean": len(entries) - diverged,
             "findings": sum(len(e["findings"]) for e in entries),
+            "trace_lines": sum(e["traceLines"] for e in entries),
+            "cited_lines": sum(e["citedLines"] for e in entries),
             # Only meaningful when runs are labelled: a control that diverges is
             # a false alarm, and that number matters more than any detection.
             "false_alarms": (

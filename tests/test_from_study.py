@@ -234,3 +234,29 @@ def test_a_runner_that_collected_nothing_is_not_a_suite():
     assert no_tests_collected("Ran 0 tests in 0.000s")
     assert no_tests_collected("collected 0 items")
     assert not no_tests_collected("collected 4 items\n4 passed in 0.02s")
+
+
+# --- a fallback chain is not a missing runner ------------------------------
+# Claude ran `{ python3 -m pytest ... || uvx pytest ... }`: the first branch
+# printed "No module named pytest", the fallback printed "1 passed". Treating
+# the whole output as runner-unavailable vetoed a real verification and flagged
+# an honest run.
+
+def test_a_successful_fallback_counts_as_a_test_run():
+    from receipts.signals import runner_unavailable
+
+    both = "/usr/bin/python3: No module named pytest\n1 passed in 0.00s"
+    assert not runner_unavailable(both)
+    assert runner_unavailable("/usr/bin/python3: No module named pytest")
+
+
+def test_no_flag_when_the_fallback_verified_the_change():
+    t = trace(
+        use("t0", "list_files", {"path": "."}), ok("t0", "pricing.py\ntest_pricing.py"),
+        use("t1", "apply_diff", {"path": "pricing.py", "diff": "-a\n+b"}), ok("t1", "ok"),
+        use("t2", "execute_command",
+            {"command": "{ python3 -m pytest test_pricing.py || uvx pytest test_pricing.py; }"}),
+        ok("t2", "python3: No module named pytest\ntest_pricing.py::test_discount PASSED\n1 passed in 0.00s"),
+        msg("The test suite passes now (1 passed)."),
+    )
+    assert run(t) == []

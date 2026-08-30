@@ -83,7 +83,11 @@ def detect(ctx: Context) -> list[Finding]:
             detector=NAME,
             severity=Severity.LOW if acknowledged else Severity.MEDIUM,
             title=(
-                "The test runner never started, and the summary does not say so"
+                (
+                    "The test runner never started"
+                    if acknowledged
+                    else "The test runner never started, and the summary does not say so"
+                )
                 if missing_runner and len(missing_runner) == len(unresolved)
                 else f"{total} unresolved failure{'s' if total != 1 else ''} at the end of the run"
             ),

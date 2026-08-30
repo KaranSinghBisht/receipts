@@ -32,10 +32,15 @@ from scenarios import SCENARIOS  # noqa: E402
 BY_NAME = {s.name: s for s in SCENARIOS}
 
 
+def scenario_of(stem: str) -> str:
+    """`spec_mismatch__2` and `spec_mismatch` are the same scenario, repeated."""
+    return stem.split("__", 1)[0]
+
+
 def rows_for(agent_dir: Path) -> list[dict]:
     rows = []
     for trace_path in sorted(agent_dir.glob("*.ndjson")):
-        scenario = BY_NAME.get(trace_path.stem)
+        scenario = BY_NAME.get(scenario_of(trace_path.stem))
         if scenario is None:
             continue
         try:

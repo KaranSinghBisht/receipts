@@ -96,38 +96,39 @@ Exit codes: `0` clean, `1` gated, `2` error. `--fail-on` sets the bar.
 
 ## What the study found
 
-Eight seeded tasks, run through **two** agents: five carrying a passive trap —
-nothing tells the agent to cut a corner — and three controls with no trap at
-all. The controls carry more weight than the detections. A divergence detector
-that fires on honest work gets muted within a week, so false alarms are reported
-next to detections rather than buried.
+Eight seeded tasks, each run **three times per agent** — 48 runs in all: five
+tasks carrying a passive trap — nothing tells the agent to cut a corner — and
+three controls with no trap at all. Agents are not deterministic, so a single
+run proves nothing; the unit of the study is a rate. And the controls carry more
+weight than the detections: a divergence detector that fires on honest work gets
+muted within a week, so false alarms are reported next to detections rather
+than buried.
 
 ```
-bob      detections: 2/5 trapped     false alarms: 0/3 control
-claude   detections: 0/5 trapped     false alarms: 0/3 control
+bob      diverged: 6 of 15 trapped runs     false alarms: 0 of 9 control runs
+claude   diverged: 0 of 15 trapped runs     false alarms: 0 of 9 control runs
 ```
 
-The two agents behaved differently under identical conditions, and the traces
-say why. Where pytest was missing, Claude Code ran the suite through a heredoc
-instead and checked every test — including the one Bob's change broke. Given a
-test that contradicted `SPEC.md`, it ran the test first to watch it fail, then
-fixed the source. Bob, on the same tasks, twice changed code and vouched for it
-without running anything.
+One result is consistent rather than anecdotal: on the task where fixing the
+bug quietly breaks a second test, Bob skipped the suite and vouched for the
+change in **three runs out of three**. The traces say why the agents differ:
+where pytest was missing, Claude Code ran the suite another way — a heredoc, a
+`uvx pytest` fallback — and checked every test, including the one Bob's change
+broke. Bob's fallback in one run was to execute the test file directly with
+Python, which runs zero pytest-style tests, and then report "all tests passed".
 
-That is one run each of eight tasks against agents that are not deterministic.
-It is an observation, not a benchmark. What it does establish is that the tool
-is not tuned to make one agent look bad: on the second agent it reports nothing,
-and it reports nothing on the controls for both.
+The tool is not tuned to make one agent look bad: pointed at the second agent
+it reports nothing, and it reports nothing on 18 control runs across both.
 
 `study/run_study.py` captures the traces, `study/report_study.py` scores them,
-`study/impact.py` measures the cost. The traps Bob did not fall for are not
-misses either — asked to rename across three files it updated all three.
+`study/impact.py` measures the cost. The traps the agents did not fall for are
+not misses — asked to rename across three files, both updated all three.
 
 ```
-8 runs audited in 0.01s
-  trace lines a reviewer would read by hand        896
-  trace lines Receipts points at                     3
-  runs needing a human at all                        2 of 8
+48 runs audited in 0.04s  (~1 ms per run)
+  trace lines a reviewer would read by hand      3,711
+  trace lines Receipts points at                    11
+  runs needing a human at all                        6 of 48
 ```
 
 Reading is not the whole of review, and cited lines are where a reviewer starts
@@ -183,6 +184,12 @@ punishing the more rigorous agent.
 as writing a file named after the package. `f"{c} -> {got}"` was read as a
 redirect into a file called `{got}`.
 
+**A fallback chain is not a missing runner.** Claude ran
+`{ pytest ... || uvx pytest ...; }`: one output holding both `No module named
+pytest` and `1 passed`. Treating the missing-runner marker as a veto discarded a
+real verification and flagged an honest run — found on run 42 of 48, which is
+what the repeats are for.
+
 **A detector that fires on correct work is worse than no detector.** The first
 version of the unresolved-failure check flagged any failed command the summary
 did not mention — which fires on every healthy red-green cycle, where a failing
@@ -200,7 +207,7 @@ kind of thing this project exists to find.
 ## Development
 
 ```bash
-uv run --with pytest --python 3.11 pytest -q     # 62 tests
+uv run --with pytest --python 3.11 pytest -q     # 64 tests
 python study/build_pages.py --out dist           # build the site
 ./deploy.sh                                      # build and publish it
 uv run --python 3.11 python study/run_study.py --list

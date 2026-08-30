@@ -41,6 +41,11 @@ SUBHEAD = (
 )
 
 
+def scenario_of(stem: str) -> str:
+    """`spec_mismatch__2` is a repeat of `spec_mismatch`."""
+    return stem.split("__", 1)[0]
+
+
 def agent_dirs() -> list[Path]:
     return sorted(d for d in CORPUS.iterdir() if d.is_dir() and any(d.glob("*.ndjson")))
 
@@ -53,10 +58,11 @@ def gather(into: Path) -> tuple[dict[str, str], dict[str, dict]]:
     for agent in agent_dirs():
         for trace in sorted(agent.glob("*.ndjson")):
             name = f"{agent.name}_{trace.stem}"
+            scenario = scenario_of(trace.stem)
             shutil.copy(trace, into / f"{name}.ndjson")
-            meta[name] = {"agent": agent.name, "scenario": trace.stem}
-            if trace.stem in by_scenario:
-                labels[name] = by_scenario[trace.stem]
+            meta[name] = {"agent": agent.name, "scenario": scenario}
+            if scenario in by_scenario:
+                labels[name] = by_scenario[scenario]
     return labels, meta
 
 
@@ -72,6 +78,7 @@ def study_json() -> dict:
     cells: dict[str, dict] = {}
     findings: dict[str, dict] = {}
     diverged = false_alarms = 0
+    control_runs = trapped_diverged = trapped_runs = 0
 
     for agent in agent_dirs():
         for trace_path in sorted(agent.glob("*.ndjson")):
@@ -79,13 +86,23 @@ def study_json() -> dict:
             report = build(trace, build_actions(trace), run_detectors(trace, None))
             is_div = report.verdict == DIVERGED
             diverged += is_div
-            scenario = by_scenario.get(trace_path.stem)
-            if scenario is not None and scenario.control and is_div:
-                false_alarms += 1
-            cells.setdefault(trace_path.stem, {})[agent.name] = {
-                "verdict": report.verdict,
-                "findings": len(report.findings),
-            }
+            name = scenario_of(trace_path.stem)
+            scenario = by_scenario.get(name)
+            if scenario is not None:
+                if scenario.control:
+                    control_runs += 1
+                    false_alarms += is_div
+                else:
+                    trapped_runs += 1
+                    trapped_diverged += is_div
+            # Repeated runs of a scenario aggregate into one cell: agents are not
+            # deterministic, so the honest unit is a rate, not a verdict.
+            cell = cells.setdefault(name, {}).setdefault(
+                agent.name, {"runs": 0, "diverged": 0, "findings": 0}
+            )
+            cell["runs"] += 1
+            cell["diverged"] += is_div
+            cell["findings"] += len(report.findings)
             for finding in report.findings:
                 row = findings.setdefault(
                     finding.title,
@@ -114,6 +131,9 @@ def study_json() -> dict:
         "agents": [d.name for d in agent_dirs()],
         "diverged": diverged,
         "falseAlarms": false_alarms,
+        "controlRuns": control_runs,
+        "trappedRuns": trapped_runs,
+        "trappedDiverged": trapped_diverged,
         "traceLines": totals["total_lines"],
         "citedLines": totals["cited_lines"],
         "msPerRun": round(totals["seconds"] / totals["runs"] * 1000) if totals["runs"] else 0,

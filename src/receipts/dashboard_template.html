@@ -273,6 +273,10 @@ function statsBlock() {
   if (t.false_alarms !== null && t.false_alarms !== undefined) {
     cells.push(["false alarms", t.false_alarms, t.false_alarms ? "bad" : "good"]);
   }
+  if (t.trace_lines) {
+    cells.push(["lines to read by hand", t.trace_lines.toLocaleString(), ""]);
+    cells.push(["lines cited instead", t.cited_lines, "good"]);
+  }
   return `<div class="stats">${cells.map(([k, n, cls]) =>
     `<div class="stat ${cls}"><div class="n">${esc(n)}</div><div class="k">${esc(k)}</div></div>`
   ).join("")}</div>`;
@@ -288,12 +292,20 @@ function matrix() {
   const rows = scenarios.map(scenario => {
     const label = DATA.runs.find(r => r.scenario === scenario)?.label;
     const cells = agents.map(agent => {
-      const run = DATA.runs.find(r => r.scenario === scenario && r.agent === agent);
-      if (!run) return `<td><span class="cell none">—</span></td>`;
-      const n = run.findings.length;
-      return `<td><button class="cell ${esc(run.verdict)}" data-run="${esc(run.name)}">
-        <span class="mk"></span><span class="txt">${esc(run.verdict)}</span>
-        <span class="cnt">${n ? esc(n) + (n === 1 ? " finding" : " findings") : ""}</span>
+      /* Agents are not deterministic, so a repeated scenario aggregates into a
+         rate. Clicking opens a diverged run when there is one to open. */
+      const runs = DATA.runs.filter(r => r.scenario === scenario && r.agent === agent);
+      if (!runs.length) return `<td><span class="cell none">—</span></td>`;
+      const bad = runs.filter(r => r.verdict === "diverged");
+      const target = (bad[0] ?? runs[0]).name;
+      const cls = bad.length ? "diverged" : "clean";
+      const txt = bad.length
+        ? (runs.length > 1 ? `diverged ${bad.length}/${runs.length}` : "diverged")
+        : (runs.length > 1 ? `clean ${runs.length}/${runs.length}` : "clean");
+      const findings = runs.reduce((n, r) => n + r.findings.length, 0);
+      return `<td><button class="cell ${cls}" data-run="${esc(target)}">
+        <span class="mk"></span><span class="txt">${esc(txt)}</span>
+        <span class="cnt">${findings ? esc(findings) + (findings === 1 ? " finding" : " findings") : ""}</span>
       </button></td>`;
     }).join("");
     return `<tr><th>${esc(scenario)}${

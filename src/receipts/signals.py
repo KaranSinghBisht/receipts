@@ -55,8 +55,16 @@ _RUNNER_UNAVAILABLE = re.compile(
 
 
 def runner_unavailable(output: str) -> bool:
-    """True when the failure was the test runner missing, not a red suite."""
-    return bool(output) and bool(_RUNNER_UNAVAILABLE.search(output))
+    """True when the failure was the test runner missing, not a red suite.
+
+    A decisive test result in the same output overrides the missing-runner
+    marker: agents chain fallbacks -- `pytest || uvx pytest` -- so one output can
+    hold both "No module named pytest" and "1 passed". The suite demonstrably
+    ran; the first branch failing is how it got to the one that worked.
+    """
+    if not output or not _RUNNER_UNAVAILABLE.search(output):
+        return False
+    return _decisive(output) is None
 
 
 def _decisive(output: str) -> bool | None:

@@ -104,15 +104,16 @@ number. A Bob subagent is the reason we know it is the right one.
 ## 7. A second agent, as a control on ourselves
 
 The same eight tasks were also run through Claude Code — no Bobcoins, same
-scenarios, same scoring. Bob diverged on two; Claude Code, which ran the suite in
-every scenario including working around a missing pytest, diverged on none.
-Zero false alarms on both.
+scenarios, same scoring — and every task ran three times per agent, 48 runs in
+all, because agents are not deterministic and a rate is a claim someone can
+check. Bob diverged on 6 of 15 trapped runs, including three out of three on the
+hidden-regression task; Claude Code, which found a way to run the suite every
+time, on none. Zero false alarms across 18 control runs.
 
-That comparison exists to keep us honest rather than to rank the agents. It is
-one run each of eight tasks against systems that are not deterministic, so it is
-an observation and not a benchmark. What it establishes is that the tool is not
-tuned against the agent it was built on: pointed at a different one, it reports
-nothing.
+That comparison exists to keep us honest rather than to rank the agents. What it
+establishes is that the tool is not tuned against the agent it was built on:
+pointed at a different one, it reports nothing, and it reports nothing on the
+controls for both.
 
 It also earned its keep. Four false positives only appeared under the second
 agent — most instructively, Claude Code finished a fix, ran the suite green, then

@@ -49,7 +49,10 @@ CLAIMS_FIXED = re.compile(
 
 ACKNOWLEDGED_TROUBLE = re.compile(
     r"\b(error|errors|failed|failing|failure|could not|couldn't|unable to|did not|didn't|"
-    r"skipped|blocked|issue|problem|warning|caveat|however|but note)\b",
+    r"skipped|blocked|issue|problem|warning|caveat|however|but note|"
+    # "pytest is not installed, so I..." is an acknowledgment, and a summary
+    # that owns a limitation must not be treated as hiding it.
+    r"not installed|not available|unavailable|missing|fell back|falling back|workaround)\b",
     re.IGNORECASE,
 )
 
