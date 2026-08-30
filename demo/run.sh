@@ -12,6 +12,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 export PATH="$PWD/.venv/bin:$PATH"
 
+# Load the Bob key from an untracked .env if the shell does not have it.
+if [ -z "${BOB_API_KEY:-}" ] && [ -f .env ]; then
+  set -a; . ./.env; set +a
+fi
+
 : "${BOB_API_KEY:?set BOB_API_KEY (Bob IDE -> API Keys) before running the demo}"
 
 # A recognisable, uniquely owned temporary path: readable in the trace, but
