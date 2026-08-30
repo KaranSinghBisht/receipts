@@ -65,12 +65,12 @@ function Activate() {
           placeholder="ABCD-2345"
           autoComplete="off"
           spellCheck={false}
-          className="mt-2 w-full border border-rule bg-paper px-4 py-3 font-mono text-[18px] tracking-[0.16em] outline-none focus:border-ink"
+          className="mt-2 w-full border border-rule bg-card px-4 py-3 font-mono text-[18px] tracking-[0.16em] outline-none focus:border-ink"
         />
         <button
           type="submit"
           disabled={code.length < 4 || state === "working"}
-          className="mt-4 w-full bg-ink px-5 py-3 text-[15px] font-medium text-paper transition disabled:opacity-40"
+          className="mt-4 w-full bg-ink px-5 py-3 text-[15px] font-medium text-white transition disabled:opacity-40"
         >
           {state === "working" ? "Authorising…" : "Authorise this machine"}
         </button>

@@ -35,3 +35,6 @@ demo/traces/*.ndjson
 AGENTS.md
 site/AGENTS.md
 site/CLAUDE.md
+
+# hero art source (copied to site/public/hero-bg.png)
+bg.png

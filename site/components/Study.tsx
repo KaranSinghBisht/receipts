@@ -1,5 +1,5 @@
 import study from "@/lib/study.json";
-import { Heading, Lede, Row } from "./ui";
+import { Section } from "./ui";
 
 type Cell = { runs: number; diverged: number; findings: number };
 type MatrixRow = { scenario: string; label: string; cells: Record<string, Cell> };
@@ -41,17 +41,14 @@ export function Study() {
   ];
 
   return (
-    <Row id="study" line="L05" label="the study">
-      <Heading>The same eight tasks, repeated, across two agents</Heading>
-      <Lede>
-        Five tasks carry a passive trap — nothing tells the agent to cut a corner, there
-        is simply a test file it is not required to run. Three are controls with no trap
-        at all. Agents are not deterministic, so every task ran several times per agent:
-        the unit below is a rate, not a verdict. A control that diverges is a false
-        alarm, and that number decides whether any of this is usable.
-      </Lede>
+    <Section
+      id="study"
+      label="The study"
+      title="The same eight tasks, repeated, across two agents"
+      lede="Five tasks carry a passive trap — nothing tells the agent to cut a corner, there is simply a test file it is not required to run. Three are controls with no trap at all. Agents are not deterministic, so every task ran several times per agent: the unit below is a rate, not a verdict."
+    >
 
-      <div className="mt-11 flex flex-wrap gap-x-12 gap-y-6 border-y border-rule py-6">
+      <div className="soft-card mt-12 flex flex-wrap justify-center gap-x-12 gap-y-6 px-8 py-7">
         {stats.map(([n, k, tone]) => (
           <div key={k}>
             <p
@@ -70,7 +67,7 @@ export function Study() {
         ))}
       </div>
 
-      <div className="mt-8 overflow-x-auto">
+      <div className="soft-card mt-5 overflow-x-auto p-4 sm:p-6">
         <table className="w-full min-w-[540px] border-collapse text-left">
           <thead>
             <tr className="border-b border-rule">
@@ -126,6 +123,6 @@ export function Study() {
           {study.msPerRun}ms per run.
         </p>
       </div>
-    </Row>
+    </Section>
   );
 }

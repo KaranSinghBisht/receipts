@@ -1,17 +1,60 @@
 import { Button } from "./ui";
 
-/** The product shot is the live dashboard in a macOS window, not a mockup and
- *  not a screenshot: if the audit changes, so does the picture.
- *
- *  The backdrop is composited in CSS. Drop a file at public/hero-bg.jpg and it
- *  is used instead — see .stage in globals.css. */
+/** Floating product objects, ChronoTask-style — except every one of them is a
+ *  real artefact from the study, not decoration. */
+function Chips() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0 hidden xl:block">
+      <div className="float-chip absolute top-[86px] left-[max(1.5rem,calc(50%-620px))] w-[228px] rotate-[-5deg] p-4">
+        <p className="font-mono text-[9.5px] tracking-[0.1em] text-warn uppercase">
+          medium
+        </p>
+        <p className="mt-1.5 text-[13px] leading-snug font-medium">
+          Claimed the change works, but never ran the tests
+        </p>
+      </div>
+      <div className="float-chip absolute top-[300px] left-[max(0.5rem,calc(50%-660px))] rotate-[3deg] p-4">
+        <p className="font-mono text-[11.5px] text-ink-2">
+          <span className="text-ink-3">$</span> sed -n &apos;28p&apos; trace.ndjson
+        </p>
+        <p className="mt-1 font-mono text-[10px] text-ink-3">
+          every finding cites a real line
+        </p>
+      </div>
+      <div className="float-chip absolute top-[92px] right-[max(1.5rem,calc(50%-620px))] rotate-[4deg] p-4 text-center">
+        <p className="font-mono text-[1.6rem] leading-none font-semibold text-good tnum">
+          0<span className="text-[1rem]">/18</span>
+        </p>
+        <p className="gutter mt-1.5">false alarms</p>
+      </div>
+      <div className="float-chip absolute top-[295px] right-[max(1rem,calc(50%-640px))] w-[212px] rotate-[-3deg] p-4">
+        <p className="flex items-center gap-2 font-mono text-[11px] text-signal">
+          <span aria-hidden className="h-[7px] w-[7px] rounded-full bg-signal" />
+          diverged 3/3
+        </p>
+        <p className="mt-1.5 text-[12.5px] leading-snug text-ink-2">
+          Bob skipped the suite on the same task, three runs out of three
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function Stage({ art }: { art: string | null }) {
   return (
     <div
-      className="stage relative overflow-hidden px-4 pt-8 pb-0 sm:px-10 sm:pt-14"
-      style={art ? { backgroundImage: `url(${art})` } : undefined}
+      className="relative overflow-hidden rounded-[28px] border border-rule bg-terminal px-4 pt-10 shadow-[0_30px_80px_-30px_rgba(21,23,28,0.45)] sm:px-12 sm:pt-14"
+      style={
+        art
+          ? {
+              backgroundImage: `url(${art})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : undefined
+      }
     >
-      <div className="mx-auto max-w-[1080px] overflow-hidden rounded-t-xl bg-[#FBFBFA] shadow-[0_40px_90px_-30px_rgba(12,14,20,0.55)] ring-1 ring-black/10">
+      <div className="mx-auto max-w-[1020px] overflow-hidden rounded-t-2xl bg-[#FBFBFA] shadow-[0_40px_90px_-30px_rgba(12,14,20,0.6)] ring-1 ring-black/10">
         <div className="flex items-center gap-2 border-b border-black/8 bg-[#EFEFED] px-4 py-3">
           <span aria-hidden className="h-[11px] w-[11px] rounded-full bg-[#FF5F57]" />
           <span aria-hidden className="h-[11px] w-[11px] rounded-full bg-[#FEBC2E]" />
@@ -25,7 +68,7 @@ function Stage({ art }: { art: string | null }) {
           src="/report.html"
           title="The live Receipts audit"
           loading="lazy"
-          className="h-[560px] w-full border-0 bg-white"
+          className="h-[540px] w-full border-0 bg-white"
         />
       </div>
     </div>
@@ -44,29 +87,29 @@ export function Hero({
   art: string | null;
 }) {
   return (
-    <div id="top" className="border-b border-rule">
-      <div className="px-6 pt-20 pb-0 md:pt-24">
-        <h1 className="display mx-auto max-w-[17ch] text-center text-[2.6rem] sm:text-[3.6rem]">
+    <div id="top" className="relative px-5 pt-16 sm:px-8 md:pt-20">
+      <Chips />
+      <div className="mx-auto max-w-[1120px]">
+        <div className="flex justify-center">
+          <span className="pill-label">
+            <span aria-hidden className="h-[6px] w-[6px] rounded-full bg-good" />
+            {diverged} of {runs} real runs diverged &middot; 0 false alarms
+          </span>
+        </div>
+        <h1 className="display mx-auto mt-6 max-w-[15ch] text-center text-[2.7rem] sm:text-[3.8rem]">
           Your agent says the tests pass
         </h1>
-        <p className="mx-auto mt-6 max-w-[60ch] text-center text-[17px] leading-[1.6] text-ink-2">
+        <p className="mx-auto mt-6 max-w-[56ch] text-center text-[17px] leading-[1.65] text-ink-2">
           Receipts holds that sentence to the agent&rsquo;s own execution trace &mdash;
           the files it wrote, the commands it ran, what those commands printed &mdash;
           and cites the line that settles it.
         </p>
-
         <div className="mt-9 flex flex-wrap justify-center gap-3">
           <Button href="/report.html">Open the live report &rarr;</Button>
           <Button href={repo} variant="quiet">
             Read the source
           </Button>
         </div>
-
-        <p className="gutter mt-7 text-center">
-          {diverged} of {runs} real agent runs claimed something their trace does not
-          support
-        </p>
-
         <div className="mt-14">
           <Stage art={art} />
         </div>

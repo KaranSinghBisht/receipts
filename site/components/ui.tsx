@@ -1,67 +1,56 @@
 import type { ReactNode } from "react";
 
-/** Every section carries a line reference in the gutter. The numbering is not
- *  decoration: this is a page about citing lines, so the page is citable. */
-export function Row({
+/** Centred section: pill label, big balanced heading, optional lede. */
+export function Section({
   id,
-  line,
   label,
+  title,
+  lede,
   children,
   className = "",
 }: {
   id?: string;
-  line: string;
   label?: string;
+  title?: ReactNode;
+  lede?: ReactNode;
   children: ReactNode;
   className?: string;
 }) {
   return (
-    <section id={id} className={`border-b border-rule ${className}`}>
-      <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-y-6 px-6 py-16 md:grid-cols-[92px_1fr] md:gap-x-8 md:px-10 md:py-24">
-        <div className="md:sticky md:top-24 md:self-start">
-          <p className="gutter">{line}</p>
-          {label ? (
-            <p className="gutter mt-1.5 text-signal uppercase">{label}</p>
-          ) : null}
-        </div>
-        <div className="min-w-0">{children}</div>
+    <section id={id} className={`px-5 py-16 sm:px-8 md:py-24 ${className}`}>
+      <div className="mx-auto max-w-[1120px]">
+        {label ? (
+          <div className="flex justify-center">
+            <span className="pill-label">{label}</span>
+          </div>
+        ) : null}
+        {title ? (
+          <h2 className="display mx-auto mt-5 max-w-[24ch] text-center text-[1.9rem] sm:text-[2.5rem]">
+            {title}
+          </h2>
+        ) : null}
+        {lede ? (
+          <p className="mx-auto mt-5 max-w-[62ch] text-center text-[16px] leading-[1.65] text-ink-2">
+            {lede}
+          </p>
+        ) : null}
+        {children}
       </div>
     </section>
   );
 }
 
-export function Heading({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <h2 className={`display max-w-[20ch] text-[2rem] sm:text-[2.6rem] ${className}`}>
-      {children}
-    </h2>
-  );
-}
-
-export function Lede({ children }: { children: ReactNode }) {
-  return (
-    <p className="mt-5 max-w-[62ch] text-[16.5px] leading-[1.65] text-ink-2">{children}</p>
-  );
-}
-
 export function Verdict({ value }: { value: string }) {
-  const bad = value === "diverged";
+  const bad = value.startsWith("diverged");
   return (
     <span
-      className={`inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.06em] ${
-        bad ? "text-signal" : "text-good"
+      className={`inline-flex items-center gap-2 rounded-full px-2.5 py-1 font-mono text-[10.5px] tracking-[0.05em] ${
+        bad ? "bg-signal-soft text-signal" : "bg-good-soft text-good"
       }`}
     >
       <span
         aria-hidden
-        className={`h-[8px] w-[8px] ${bad ? "bg-signal" : "bg-good"}`}
-        style={{ borderRadius: 1 }}
+        className={`h-[7px] w-[7px] rounded-full ${bad ? "bg-signal" : "bg-good"}`}
       />
       {value}
     </span>
@@ -79,31 +68,26 @@ export function Button({
 }) {
   const styles =
     variant === "solid"
-      ? "bg-ink text-paper hover:bg-[#2A2C31]"
-      : "border border-rule text-ink hover:border-ink-3";
+      ? "bg-accent text-white shadow-[0_10px_24px_-10px_rgba(15,98,254,0.55)] hover:brightness-108"
+      : "bg-card text-ink border border-rule shadow-[0_2px_10px_rgba(21,23,28,0.05)] hover:border-ink-3";
   return (
     <a
       href={href}
-      className={`inline-flex items-center gap-2 px-5 py-2.5 text-[14.5px] font-medium transition ${styles}`}
-      style={{ borderRadius: 2 }}
+      className={`inline-flex items-center gap-2 rounded-full px-6 py-3 text-[15px] font-medium transition ${styles}`}
     >
       {children}
     </a>
   );
 }
 
-/** Terminal output, used as a real object on the page rather than an image. */
-export function Terminal({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
+export function Terminal({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="overflow-hidden bg-terminal" style={{ borderRadius: 3 }}>
+    <div className="overflow-hidden rounded-2xl bg-terminal shadow-[0_18px_50px_-22px_rgba(21,23,28,0.5)]">
       <div className="flex items-center gap-2 border-b border-white/8 px-4 py-2.5">
-        <span className="font-mono text-[10.5px] tracking-[0.12em] text-white/35 uppercase">
+        <span aria-hidden className="h-[10px] w-[10px] rounded-full bg-[#FF5F57]" />
+        <span aria-hidden className="h-[10px] w-[10px] rounded-full bg-[#FEBC2E]" />
+        <span aria-hidden className="h-[10px] w-[10px] rounded-full bg-[#28C840]" />
+        <span className="ml-2 font-mono text-[10.5px] tracking-[0.12em] text-white/35 uppercase">
           {title}
         </span>
       </div>

@@ -1,4 +1,4 @@
-import { Heading, Lede, Row } from "./ui";
+import { Section } from "./ui";
 
 const FOUND = [
   [
@@ -21,21 +21,19 @@ const FOUND = [
 
 export function Reflexive() {
   return (
-    <Row line="L06" label="applied to itself" className="bg-panel">
-      <Heading>What it found in its own build</Heading>
-      <Lede>
-        Every one of these was invisible until a real trace produced it. They are on the
-        site for the same reason they are in the README.
-      </Lede>
-
-      <div className="mt-11 grid gap-px border border-rule bg-rule sm:grid-cols-2">
+    <Section
+      label="Applied to itself"
+      title="What it found in its own build"
+      lede="Every one of these was invisible until a real trace produced it. They are on the site for the same reason they are in the README: a tool demanding receipts has to show its own."
+    >
+      <div className="mt-12 grid gap-5 sm:grid-cols-2">
         {FOUND.map(([title, body]) => (
-          <article key={title} className="bg-paper p-6">
+          <article key={title} className="soft-card p-7">
             <h3 className="text-[15.5px] font-semibold tracking-[-0.01em]">{title}</h3>
             <p className="mt-2.5 text-[14px] leading-relaxed text-ink-2">{body}</p>
           </article>
         ))}
       </div>
-    </Row>
+    </Section>
   );
 }
