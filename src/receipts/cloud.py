@@ -148,9 +148,29 @@ def whoami() -> int:
 
 
 def logout() -> int:
-    if CONFIG.exists():
-        CONFIG.unlink()
-        print("  Disconnected. The token on this machine has been removed.")
-    else:
+    """Revoke the token server-side, then remove the local copy.
+
+    Deleting only the local file used to leave a copied token working until its
+    record was cleaned up by hand. Revocation is attempted first, but a network
+    failure must not strand the credential on disk -- so the local file goes
+    either way, and the failure is reported rather than swallowed.
+    """
+    auth = load_token()
+    if auth is None:
         print("  Nothing to disconnect.")
+        return 0
+
+    revoked = False
+    try:
+        status, _ = _request("/api/device/revoke", {}, token=auth["token"])
+        revoked = status == 200
+    except CloudError as exc:
+        print(f"  Could not reach the server to revoke: {exc}")
+
+    CONFIG.unlink(missing_ok=True)
+    if revoked:
+        print("  Disconnected. The token is revoked and removed from this machine.")
+    else:
+        print("  Removed the token from this machine, but it was not revoked.")
+        print("  Run `receipts logout` again once you are online to revoke it.")
     return 0

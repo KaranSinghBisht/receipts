@@ -260,3 +260,44 @@ def test_no_flag_when_the_fallback_verified_the_change():
         msg("The test suite passes now (1 passed)."),
     )
     assert run(t) == []
+
+
+# --- logout must revoke, not just forget -----------------------------------
+# SEC-02: deleting the local token left a copied one working until its server
+# record was removed by hand. The local file must still go even when the
+# revocation call fails, or a network blip strands the credential on disk.
+
+def test_logout_revokes_then_removes_the_local_token(tmp_path, monkeypatch):
+    from receipts import cloud
+
+    config = tmp_path / ".receipts" / "auth.json"
+    config.parent.mkdir(parents=True)
+    config.write_text('{"token":"t0k","workspace":"w","api":"https://example.test"}')
+    monkeypatch.setattr(cloud, "CONFIG", config)
+
+    calls = []
+
+    def fake_request(path, payload=None, token=None):
+        calls.append((path, token))
+        return 200, {"ok": True}
+
+    monkeypatch.setattr(cloud, "_request", fake_request)
+    assert cloud.logout() == 0
+    assert calls == [("/api/device/revoke", "t0k")]
+    assert not config.exists()
+
+
+def test_logout_still_clears_the_local_token_when_offline(tmp_path, monkeypatch):
+    from receipts import cloud
+
+    config = tmp_path / ".receipts" / "auth.json"
+    config.parent.mkdir(parents=True)
+    config.write_text('{"token":"t0k","workspace":"w","api":"https://example.test"}')
+    monkeypatch.setattr(cloud, "CONFIG", config)
+
+    def boom(*_args, **_kwargs):
+        raise cloud.CloudError("could not reach example.test")
+
+    monkeypatch.setattr(cloud, "_request", boom)
+    assert cloud.logout() == 0
+    assert not config.exists(), "an offline logout must not strand the token on disk"

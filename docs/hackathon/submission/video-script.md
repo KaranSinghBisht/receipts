@@ -12,7 +12,8 @@ working live twice.
 
 ```bash
 export BOB_API_KEY=…                   # pane you never record
-export PATH="<rvenv>/bin:$PATH"
+uv sync --frozen
+export PATH="$PWD/.venv/bin:$PATH"
 ./demo/reset.sh
 receipts demo/traces --watch           # pane 1 → http://127.0.0.1:7878
 # browser tabs, in order:

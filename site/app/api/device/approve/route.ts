@@ -2,12 +2,17 @@ import { cookies } from "next/headers";
 
 import { approveUserCode } from "@/lib/auth";
 
+import { LIMITS, clientKey, rateLimit, tooMany } from "@/lib/ratelimit";
+
 export const dynamic = "force-dynamic";
 
 const USER_CODE = /^[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$/;
 
 /** Called by the browser once someone confirms the code their CLI printed. */
 export async function POST(request: Request) {
+  const gate = rateLimit(`deviceApprove:${clientKey(request)}`, LIMITS.deviceApprove.limit, LIMITS.deviceApprove.windowMs);
+  if (!gate.ok) return tooMany(gate);
+
   let userCode: unknown;
   try {
     ({ user_code: userCode } = (await request.json()) as { user_code?: unknown });

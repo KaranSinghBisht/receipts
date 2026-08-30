@@ -3,6 +3,8 @@ import { randomBytes } from "node:crypto";
 import { runPath, workspaceForToken } from "@/lib/auth";
 import { listJson, putJson } from "@/lib/store";
 
+import { LIMITS, clientKey, rateLimit, tooMany } from "@/lib/ratelimit";
+
 export const dynamic = "force-dynamic";
 
 export type StoredRun = {
@@ -19,6 +21,9 @@ export type StoredRun = {
 
 /** `receipts push` sends an audited run here. The trace never leaves the machine. */
 export async function POST(request: Request) {
+  const gate = rateLimit(`runs:${clientKey(request)}`, LIMITS.runsWrite.limit, LIMITS.runsWrite.windowMs);
+  if (!gate.ok) return tooMany(gate);
+
   const workspace = await workspaceForToken(request.headers.get("authorization"));
   if (!workspace) return Response.json({ error: "unauthorized" }, { status: 401 });
 

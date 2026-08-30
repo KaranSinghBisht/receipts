@@ -37,6 +37,13 @@ export async function deleteJson(pathnames: string | string[]): Promise<void> {
   await del(pathnames);
 }
 
+/** How many records sit under a prefix, counting no further than `limit`.
+ *  Cheaper than listJson: it never fetches the bodies. */
+export async function countPrefix(prefix: string, limit = 500): Promise<number> {
+  const { blobs } = await list({ prefix, limit });
+  return blobs.length;
+}
+
 export async function listJson<T>(prefix: string, limit = 200): Promise<T[]> {
   const { blobs } = await list({ prefix, limit });
   const found: T[] = [];

@@ -24,11 +24,11 @@ everything forever while looking perfectly healthy.
 
 ## 2. Agent mode produced the study
 
-Eight seeded tasks were run through Bob headless, in Agent mode, on throwaway
-workspaces: five carrying a passive trap — nothing instructs the agent to cut a
-corner — and three controls with no trap at all. `study/run_study.py` captures
-every trace into `corpus/bob/`. Those eight traces are the evidence behind every
-number in the README, and they are committed, so the study is re-runnable.
+Eight seeded tasks were run three times through Bob headless, in Agent mode, on
+throwaway workspaces: five carrying a passive trap — nothing instructs the agent
+to cut a corner — and three controls with no trap at all. `study/run_study.py`
+captures all 24 Bob traces into `corpus/bob/`. Those committed traces are the
+evidence behind every number in the README, so the study is re-runnable.
 
 ## 3. A custom mode audits a finished run
 
