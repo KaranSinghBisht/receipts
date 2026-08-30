@@ -8,6 +8,7 @@ const NAV = [
   { href: "/dashboard", label: "Overview" },
   { href: "/dashboard/runs", label: "Runs", count: report.runs.length },
   { href: "/dashboard/findings", label: "Findings", count: report.totals.findings },
+  { href: "/dashboard/graph", label: "Graph" },
   { href: "/dashboard/study", label: "Study matrix" },
 ];
 
