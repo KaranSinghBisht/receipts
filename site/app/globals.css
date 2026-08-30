@@ -123,3 +123,100 @@ body {
   outline-offset: 3px;
   border-radius: 4px;
 }
+
+/* ---------- motion & texture ---------- */
+
+/* Above-the-fold entrance: pure CSS, staggered with animation-delay. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: none; }
+}
+.rise {
+  opacity: 0;
+  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+/* Floating hero chips: slow drift, staggered per chip. */
+@keyframes drift {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+  50%      { transform: translateY(-10px) rotate(var(--tilt, 0deg)); }
+}
+.drift { animation: drift 7s ease-in-out infinite; }
+
+/* Scroll reveal, driven by a tiny IntersectionObserver component. */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.65s ease, transform 0.65s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal.in { opacity: 1; transform: none; }
+
+/* Runner marquee. Content is duplicated once; -50% loops seamlessly. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee { display: flex; width: max-content; gap: 12px; animation: marquee 28s linear infinite; }
+.marquee:hover { animation-play-state: paused; }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+.pulse-dot { animation: pulse-dot 2.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .reveal { opacity: 1; transform: none; animation: none; transition: none; }
+  .drift, .marquee, .pulse-dot { animation: none; }
+}
+
+/* Fine blueprint grid, for panels and page breakers. */
+.gridfield {
+  background-image:
+    linear-gradient(to right, rgba(21, 23, 28, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(21, 23, 28, 0.045) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+/* Soft colour blobs behind sections — atmosphere, never information. */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* A full-bleed white band between ground-coloured sections. */
+.band { background: var(--card); border-block: 1px solid var(--rule); }
+
+/* A dark band mid-page; local overrides keep the shared pieces legible. */
+.dark-band { background: var(--terminal); }
+.dark-band .pill-label {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.75);
+  box-shadow: none;
+}
+.dark-band h2 { color: #fff; }
+.dark-band .section-lede { color: rgba(230, 234, 240, 0.72); }
+
+/* Page breaker: a hairline that fades in from both ends, with a centre mark. */
+.breaker {
+  position: relative;
+  height: 1px;
+  max-width: 1120px;
+  margin: 0 auto;
+  background: linear-gradient(to right, transparent, var(--rule) 18%, var(--rule) 82%, transparent);
+}
+.breaker::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--ground);
+  border: 1px solid var(--ink-3);
+}

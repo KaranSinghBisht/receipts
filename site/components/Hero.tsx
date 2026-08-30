@@ -5,7 +5,7 @@ import { Button } from "./ui";
 function Chips() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 hidden xl:block">
-      <div className="float-chip absolute top-[86px] left-[max(1.5rem,calc(50%-620px))] w-[228px] rotate-[-5deg] p-4">
+      <div className="float-chip drift absolute top-[86px] left-[max(1.5rem,calc(50%-620px))] w-[228px] p-4" style={{ "--tilt": "-5deg" } as React.CSSProperties}>
         <p className="font-mono text-[9.5px] tracking-[0.1em] text-warn uppercase">
           medium
         </p>
@@ -13,7 +13,7 @@ function Chips() {
           Claimed the change works, but never ran the tests
         </p>
       </div>
-      <div className="float-chip absolute top-[300px] left-[max(0.5rem,calc(50%-660px))] rotate-[3deg] p-4">
+      <div className="float-chip drift absolute top-[300px] left-[max(0.5rem,calc(50%-660px))] p-4" style={{ "--tilt": "3deg", animationDelay: "-2s" } as React.CSSProperties}>
         <p className="font-mono text-[11.5px] text-ink-2">
           <span className="text-ink-3">$</span> sed -n &apos;28p&apos; trace.ndjson
         </p>
@@ -21,13 +21,13 @@ function Chips() {
           every finding cites a real line
         </p>
       </div>
-      <div className="float-chip absolute top-[92px] right-[max(1.5rem,calc(50%-620px))] rotate-[4deg] p-4 text-center">
+      <div className="float-chip drift absolute top-[92px] right-[max(1.5rem,calc(50%-620px))] p-4 text-center" style={{ "--tilt": "4deg", animationDelay: "-4s" } as React.CSSProperties}>
         <p className="font-mono text-[1.6rem] leading-none font-semibold text-good tnum">
           0<span className="text-[1rem]">/18</span>
         </p>
         <p className="gutter mt-1.5">false alarms</p>
       </div>
-      <div className="float-chip absolute top-[295px] right-[max(1rem,calc(50%-640px))] w-[212px] rotate-[-3deg] p-4">
+      <div className="float-chip drift absolute top-[295px] right-[max(1rem,calc(50%-640px))] w-[212px] p-4" style={{ "--tilt": "-3deg", animationDelay: "-5.5s" } as React.CSSProperties}>
         <p className="flex items-center gap-2 font-mono text-[11px] text-signal">
           <span aria-hidden className="h-[7px] w-[7px] rounded-full bg-signal" />
           diverged 3/3
@@ -87,30 +87,46 @@ export function Hero({
   art: string | null;
 }) {
   return (
-    <div id="top" className="relative px-5 pt-16 sm:px-8 md:pt-20">
+    <div id="top" className="relative isolate overflow-x-clip px-5 pt-16 sm:px-8 md:pt-20">
+      <div aria-hidden className="blob top-[-80px] left-[8%] h-[380px] w-[380px] bg-accent/14" />
+      <div aria-hidden className="blob top-[120px] right-[6%] h-[320px] w-[320px] bg-good/12" />
+      <div aria-hidden className="blob top-[440px] left-[42%] h-[300px] w-[420px] bg-signal/8" />
+      <div
+        aria-hidden
+        className="gridfield absolute inset-x-0 top-0 -z-10 h-[520px] [mask-image:linear-gradient(to_bottom,black,transparent)]"
+      />
       <Chips />
       <div className="mx-auto max-w-[1120px]">
-        <div className="flex justify-center">
+        <div className="rise flex justify-center">
           <span className="pill-label">
-            <span aria-hidden className="h-[6px] w-[6px] rounded-full bg-good" />
+            <span aria-hidden className="pulse-dot h-[6px] w-[6px] rounded-full bg-good" />
             {diverged} of {runs} real runs diverged &middot; 0 false alarms
           </span>
         </div>
-        <h1 className="display mx-auto mt-6 max-w-[15ch] text-center text-[2.7rem] sm:text-[3.8rem]">
+        <h1
+          className="display rise mx-auto mt-6 max-w-[15ch] text-center text-[2.7rem] sm:text-[3.8rem]"
+          style={{ animationDelay: "90ms" }}
+        >
           Your agent says the tests pass
         </h1>
-        <p className="mx-auto mt-6 max-w-[56ch] text-center text-[17px] leading-[1.65] text-ink-2">
+        <p
+          className="rise mx-auto mt-6 max-w-[56ch] text-center text-[17px] leading-[1.65] text-ink-2"
+          style={{ animationDelay: "180ms" }}
+        >
           Receipts holds that sentence to the agent&rsquo;s own execution trace &mdash;
           the files it wrote, the commands it ran, what those commands printed &mdash;
           and cites the line that settles it.
         </p>
-        <div className="mt-9 flex flex-wrap justify-center gap-3">
+        <div
+          className="rise mt-9 flex flex-wrap justify-center gap-3"
+          style={{ animationDelay: "260ms" }}
+        >
           <Button href="/report.html">Open the live report &rarr;</Button>
           <Button href={repo} variant="quiet">
             Read the source
           </Button>
         </div>
-        <div className="mt-14">
+        <div className="rise mt-14" style={{ animationDelay: "360ms" }}>
           <Stage art={art} />
         </div>
       </div>

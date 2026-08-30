@@ -30,6 +30,7 @@ const STEPS = [
 export function Pillars() {
   return (
     <Section
+      tone="band"
       label="How it runs"
       title="Four steps, and none of them is a model grading another model"
       lede="A verdict is a function of the trace. The same trace gives the same verdict, every time, for nothing."

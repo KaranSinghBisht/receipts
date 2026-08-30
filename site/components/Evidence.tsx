@@ -3,6 +3,7 @@ import { Section } from "./ui";
 export function Evidence() {
   return (
     <Section
+      tone="dark"
       label="The moment it matters"
       title="It broke a test, then vouched for the change"
       lede="A real IBM Bob run — and not a rare one: on this task Bob skipped the suite in three runs out of three. It fixed the reported bug, spot-checked two happy paths, and reported success. A third test had started raising. It never ran the suite, so it never found out."

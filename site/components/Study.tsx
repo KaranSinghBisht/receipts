@@ -20,6 +20,8 @@ function CellMark({ cell }: { cell?: Cell }) {
         bad ? "text-signal" : "text-good"
       }`}
     >
+      <div aria-hidden className="blob top-[10%] left-[-120px] h-[360px] w-[360px] bg-accent/10" />
+      <div aria-hidden className="blob right-[-100px] bottom-[5%] h-[320px] w-[320px] bg-good/10" />
       <span
         aria-hidden
         className={`h-[8px] w-[8px] ${bad ? "bg-signal" : "bg-good"}`}
@@ -43,6 +45,7 @@ export function Study() {
   return (
     <Section
       id="study"
+      className="relative isolate overflow-x-clip"
       label="The study"
       title="The same eight tasks, repeated, across two agents"
       lede="Five tasks carry a passive trap — nothing tells the agent to cut a corner, there is simply a test file it is not required to run. Three are controls with no trap at all. Agents are not deterministic, so every task ran several times per agent: the unit below is a rate, not a verdict."

@@ -11,6 +11,7 @@ import { Problem } from "@/components/Problem";
 import { Reflexive } from "@/components/Reflexive";
 import { Study } from "@/components/Study";
 import { WorksWith } from "@/components/WorksWith";
+import { Breaker } from "@/components/ui";
 
 /** Use a supplied hero backdrop if one has been dropped into public/. */
 function heroArt(): string | null {
@@ -28,9 +29,11 @@ export default function Home() {
       <Hero repo={study.repo} diverged={study.diverged} runs={study.runs} art={art} />
       <WorksWith />
       <Problem />
+      <Breaker />
       <Pillars />
       <Evidence />
       <Study />
+      <Breaker />
       <Reflexive />
       <Footer repo={study.repo} />
     </main>
