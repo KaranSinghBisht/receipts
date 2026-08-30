@@ -9,8 +9,9 @@ Everything needed to film, in the order you need it. The script itself is in
 # 1. the API key, in a pane you do NOT record
 export BOB_API_KEY=…
 
-# 2. put receipts on PATH for this shell
-export PATH="/private/tmp/claude-501/-Users-kryptos-Desktop-Projects-hackathons-bob/832ccc72-4848-4540-9ab5-a239f2afa62a/scratchpad/rvenv/bin:$PATH"
+# 2. install this checkout and put receipts on PATH for this shell
+uv sync --frozen
+export PATH="$PWD/.venv/bin:$PATH"
 receipts --version          # expect: receipts 0.1.0
 
 # 3. clear the board

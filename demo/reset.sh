@@ -4,5 +4,4 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 rm -f demo/traces/*.ndjson
-rm -rf "${RECEIPTS_DEMO_DIR:-$HOME/receipts-demo}"
-echo "demo reset — board is empty, scenario restored"
+echo "demo reset — board is empty"

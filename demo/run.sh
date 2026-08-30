@@ -13,12 +13,10 @@ cd "$(dirname "$0")/.."
 
 : "${BOB_API_KEY:?set BOB_API_KEY (Bob IDE -> API Keys) before running the demo}"
 
-# A readable path rather than mktemp: the workspace shows up inside the trace
-# and inside the evidence, and /var/folders/b2/tkmsh.../T/tmp.wAPzVjShL2 is not
-# something anyone should have to read.
-WORK="${RECEIPTS_DEMO_DIR:-$HOME/receipts-demo}"
+# A recognisable, uniquely owned temporary path: readable in the trace, but
+# never broad enough for cleanup to touch an existing user directory.
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/receipts-demo.XXXXXX")"
 TRACE="demo/traces/fix-parse-range.ndjson"
-rm -rf "$WORK"; mkdir -p "$WORK"
 trap 'rm -rf "$WORK"' EXIT
 
 cp demo/scenario/*.py "$WORK/"

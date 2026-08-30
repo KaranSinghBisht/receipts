@@ -3,7 +3,7 @@
 Bob is not a thing this project was built *with*. It is the thing the project
 reads, the thing it runs inside, and the thing that found its worst bugs.
 
-Measured at the time of writing: **23 Bob tasks, 4.02 of 40 Bobcoins**, against
+Measured at the time of writing: **43 Bob tasks, 9.4 of 40 Bobcoins**, against
 Bob Shell 2.0.1 and Bob IDE 2.0.3 on the `ibm-coding-challenge-uat` instance
 (`us-east`).
 
