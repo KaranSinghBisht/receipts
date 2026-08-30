@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from . import LINE_KEY
 from ..model import Event, Message, Outcome, RunResult, ToolResult, ToolUse, Trace
 
 SOURCE = "claude-code"
@@ -98,7 +99,8 @@ def _from_result(record: dict[str, Any], seq: int) -> list[Event]:
 
 def parse(records: list[dict[str, Any]]) -> Trace:
     events: list[Event] = []
-    for seq, record in enumerate(records):
+    for index, record in enumerate(records):
+        seq = record.get(LINE_KEY, index)
         kind = record.get("type")
         if kind == "assistant":
             events.extend(_from_assistant(record, seq))

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type State = "idle" | "working" | "done" | "error";
@@ -8,14 +8,9 @@ type State = "idle" | "working" | "done" | "error";
 function Activate() {
   const params = useSearchParams();
   const router = useRouter();
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(() => params.get("code")?.toUpperCase() ?? "");
   const [state, setState] = useState<State>("idle");
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    const fromUrl = params.get("code");
-    if (fromUrl) setCode(fromUrl.toUpperCase());
-  }, [params]);
 
   async function approve(event: React.FormEvent) {
     event.preventDefault();

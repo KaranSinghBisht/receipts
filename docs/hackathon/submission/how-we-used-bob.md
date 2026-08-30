@@ -89,8 +89,9 @@ Chasing that down exposed a genuine data-loss bug in Bob Shell 2.0.1: its
 stream-json renderer keys a dedup set on the assistant message id, and Bob
 appends each new tool call to that same message, so **only the first call of a
 turn is emitted as a `tool_use`** while every result still arrives. In our corpus
-that is **35 of 68 calls** — Receipts had been seeing less than half of every
-run, and "1 file written, 1 command run" was never true.
+that is **35 of 68 calls** in the first eight-run corpus and **106 of 194**
+across the current 24 Bob runs — Receipts had been seeing less than half of
+every run, and "1 file written, 1 command run" was never true.
 
 `bob_output.infer` now rebuilds each unreported call from the prefixes Bob puts
 on result output. A command's text is unrecoverable, so a recovered command is
@@ -123,7 +124,7 @@ called that a divergence, punishing the more rigorous agent.
 
 ## Where to see it
 
-The site and the report over all sixteen runs are published at
+The site and the report over all 48 runs are published at
 **receipts-bob.vercel.app**, rebuilt from the corpora by
 `study/build_pages.py`, so every figure on it is derived from the study rather
 than written by hand.

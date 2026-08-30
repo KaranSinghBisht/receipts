@@ -63,7 +63,7 @@ from its own trace and always shows `1 failed, 2 passed`.
 | 7 | terminal | step 5 of the demo — the tests Bob did not run |
 | 8 | terminal | `receipts login` → browser approves → `receipts push` |
 | 9 | browser | the workspace, with the run in it |
-| 10 | browser | receipts-bob.vercel.app — the site and the 16-run report |
+| 10 | browser | receipts-bob.vercel.app — the site and the 48-run report |
 
 ## Never on camera
 

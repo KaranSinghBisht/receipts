@@ -1,4 +1,4 @@
-import { get, list, put } from "@vercel/blob";
+import { del, get, list, put } from "@vercel/blob";
 
 /**
  * JSON records in a private Blob store.
@@ -31,6 +31,10 @@ export async function getJson<T>(pathname: string): Promise<T | null> {
   } catch {
     return null;
   }
+}
+
+export async function deleteJson(pathnames: string | string[]): Promise<void> {
+  await del(pathnames);
 }
 
 export async function listJson<T>(prefix: string, limit = 200): Promise<T[]> {

@@ -72,7 +72,7 @@ function buildGraph() {
 
 export function GraphView() {
   const router = useRouter();
-  const { nodes, links } = useMemo(buildGraph, []);
+  const { nodes, links } = useMemo(() => buildGraph(), []);
   const [, setTick] = useState(0);
   const [hover, setHover] = useState<GNode | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);

@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 
-import { getJson, putJson } from "./store";
+import { deleteJson, getJson, putJson } from "./store";
 
 /**
  * Device authorisation.
@@ -11,11 +11,13 @@ import { getJson, putJson } from "./store";
  * *machine* to write to a workspace. It does not identify a person, and the UI
  * says so rather than implying an account exists.
  *
- * Tokens are never stored. Only their SHA-256 is kept, so the records here are
- * useless to anyone who reads them.
+ * Long-lived tokens are stored only as SHA-256 hashes. The raw device token is
+ * held in the pending device record just long enough for the CLI to collect it,
+ * then that record is deleted.
  */
 
 export const CODE_TTL_MS = 10 * 60 * 1000;
+export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 export type DeviceRecord = {
   userCode: string;
@@ -26,6 +28,7 @@ export type DeviceRecord = {
 };
 
 export type TokenRecord = { workspace: string; createdAt: number };
+export type BrowserSessionRecord = { workspace: string; createdAt: number };
 export type Workspace = { id: string; createdAt: number };
 
 const secret = (bytes = 32) => randomBytes(bytes).toString("base64url");
@@ -45,6 +48,7 @@ export function makeUserCode(): string {
 export const devicePath = (deviceCode: string) => `device/${deviceCode}.json`;
 export const codePath = (userCode: string) => `code/${userCode}.json`;
 export const tokenPath = (token: string) => `token/${hashToken(token)}.json`;
+export const sessionPath = (token: string) => `session/${hashToken(token)}.json`;
 export const workspacePath = (id: string) => `ws/${id}/meta.json`;
 export const runPath = (workspace: string, runId: string) =>
   `ws/${workspace}/runs/${runId}.json`;
@@ -74,36 +78,65 @@ export async function approveUserCode(userCode: string) {
   const record = await getJson<DeviceRecord>(devicePath(pointer.deviceCode));
   if (!record) return { ok: false as const, reason: "unknown" as const };
   if (expired(record)) return { ok: false as const, reason: "expired" as const };
-  if (record.approved) {
-    return { ok: true as const, workspace: record.workspace! };
+  let workspace = record.workspace;
+  if (!record.approved) {
+    workspace = secret(9);
+    const token = secret();
+    await putJson(workspacePath(workspace), {
+      id: workspace,
+      createdAt: Date.now(),
+    } satisfies Workspace);
+    await putJson(tokenPath(token), {
+      workspace,
+      createdAt: Date.now(),
+    } satisfies TokenRecord);
+    await putJson(devicePath(pointer.deviceCode), {
+      ...record,
+      approved: true,
+      workspace,
+      token,
+    } satisfies DeviceRecord);
   }
 
-  const workspace = secret(9);
-  const token = secret();
-  await putJson(workspacePath(workspace), {
-    id: workspace,
+  const sessionToken = secret();
+  await putJson(sessionPath(sessionToken), {
+    workspace: workspace!,
     createdAt: Date.now(),
-  } satisfies Workspace);
-  await putJson(tokenPath(token), {
-    workspace,
-    createdAt: Date.now(),
-  } satisfies TokenRecord);
-  await putJson(devicePath(pointer.deviceCode), {
-    ...record,
-    approved: true,
-    workspace,
-    token,
-  } satisfies DeviceRecord);
-
-  return { ok: true as const, workspace };
+  } satisfies BrowserSessionRecord);
+  return { ok: true as const, workspace: workspace!, sessionToken };
 }
 
 /** Resolve a bearer token to its workspace, or null. */
 export async function workspaceForToken(
   authorization: string | null,
 ): Promise<string | null> {
-  const token = authorization?.replace(/^Bearer\s+/i, "").trim();
+  const token = authorization?.match(/^Bearer\s+(\S+)\s*$/i)?.[1];
   if (!token) return null;
   const record = await getJson<TokenRecord>(tokenPath(token));
   return record?.workspace ?? null;
+}
+
+/** Resolve the opaque browser-session cookie to its workspace. */
+export async function workspaceForSession(token: string | undefined): Promise<string | null> {
+  if (!token) return null;
+  const record = await getJson<BrowserSessionRecord>(sessionPath(token));
+  if (!record || Date.now() - record.createdAt > SESSION_TTL_MS) return null;
+  return record.workspace;
+}
+
+/** Return a device token once, then remove the temporary plaintext record. */
+export async function collectDeviceToken(deviceCode: string) {
+  const path = devicePath(deviceCode);
+  const record = await getJson<DeviceRecord>(path);
+  if (!record) return { ok: false as const, reason: "unknown" as const };
+  if (expired(record)) return { ok: false as const, reason: "expired" as const };
+  if (!record.approved || !record.token || !record.workspace) {
+    return { ok: false as const, reason: "pending" as const };
+  }
+  await deleteJson([path, codePath(record.userCode)]);
+  return {
+    ok: true as const,
+    token: record.token,
+    workspace: record.workspace,
+  };
 }

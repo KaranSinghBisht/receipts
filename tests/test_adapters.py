@@ -1,9 +1,11 @@
 """Both agent formats must normalise to the same canonical trace."""
 
+import json
+
 import pytest
 
 from receipts.actions import ActionKind, actions
-from receipts.adapters import UnknownTraceFormat, parse_records
+from receipts.adapters import UnknownTraceFormat, load as load_trace, parse_records
 from receipts.model import Message, Outcome
 
 
@@ -40,6 +42,32 @@ def test_claude_code_normalises_to_same_shape(load):
     assert kinds.count(ActionKind.RUN_COMMAND) == 2
     assert kinds.count(ActionKind.WRITE_FILE) == 3
     assert "All tests passing" in trace.final_message
+
+
+def test_claude_code_events_cite_real_one_based_file_lines(tmp_path):
+    path = tmp_path / "trace.ndjson"
+    assistant = {
+        "type": "assistant",
+        "message": {
+            "content": [
+                {"type": "tool_use", "id": "t1", "name": "Bash", "input": {"command": "pytest"}}
+            ]
+        },
+    }
+    result = {
+        "type": "user",
+        "message": {
+            "content": [
+                {"type": "tool_result", "tool_use_id": "t1", "content": "1 passed"}
+            ]
+        },
+    }
+    path.write_text("\n" + json.dumps(assistant) + "\n42\n" + json.dumps(result) + "\n")
+
+    trace = load_trace(path)
+
+    assert trace.tool_uses()[0].seq == 2
+    assert trace.results_by_tool_id()["t1"].seq == 4
 
 
 def test_unknown_format_is_rejected():

@@ -80,10 +80,13 @@ def login() -> int:
     code = start["user_code"]
     complete = start["verification_uri_complete"]
 
-    print(f"\n  Your code:  {code}\n")
-    print(f"  Confirm it at  {complete}\n")
+    # flush=True throughout: when stdout is a pipe -- CI, an IDE pane, `| tee` --
+    # block buffering would otherwise hold the code back while we silently poll,
+    # and the person would never see what they are meant to type.
+    print(f"\n  Your code:  {code}\n", flush=True)
+    print(f"  Confirm it at  {complete}\n", flush=True)
     if webbrowser.open(complete):
-        print("  (opened in your browser)\n")
+        print("  (opened in your browser)\n", flush=True)
 
     deadline = time.time() + POLL_TIMEOUT_S
     interval = max(1, int(start.get("interval", 2)))
@@ -92,7 +95,7 @@ def login() -> int:
         status, body = _request("/api/device/poll", {"device_code": start["device_code"]})
         if status == 200:
             save_token(body["access_token"], body["workspace"])
-            print(f"  Connected. Runs will appear at {api_base()}/w/{body['workspace']}")
+            print(f"  Connected. Runs will appear at {api_base()}/w/{body['workspace']}", flush=True)
             return 0
         if body.get("error") == "authorization_pending":
             continue
@@ -105,6 +108,11 @@ def push(report: dict[str, Any], name: str) -> int:
     auth = load_token()
     if not auth:
         raise CloudError("not connected. Run `receipts login` first.")
+    if auth.get("api") != api_base():
+        raise CloudError(
+            "RECEIPTS_API has changed since login. Run `receipts login` again "
+            "before sending this machine's token to a different server."
+        )
 
     ground = report.get("ground_truth", {})
     payload = {

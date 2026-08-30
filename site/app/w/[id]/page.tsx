@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 
 import type { StoredRun } from "@/app/api/runs/route";
+import { workspaceForSession } from "@/lib/auth";
 import { listJson } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -90,8 +91,9 @@ export default async function WorkspacePage({
 }) {
   const { id } = await params;
   const jar = await cookies();
+  const workspace = await workspaceForSession(jar.get("receipts_session")?.value);
 
-  if (jar.get("receipts_ws")?.value !== id) {
+  if (workspace !== id) {
     return (
       <main className="mx-auto max-w-[560px] px-6 py-24">
         <p className="gutter">403</p>

@@ -32,19 +32,24 @@ export async function POST(request: Request) {
     return Response.json({ error: "name and verdict are required" }, { status: 400 });
   }
 
+  const findings = Array.isArray(body.findings) ? body.findings : [];
+  const count = (value: unknown) => {
+    const parsed = Number(value ?? 0);
+    return Number.isFinite(parsed) ? Math.max(0, Math.trunc(parsed)) : 0;
+  };
   const run: StoredRun = {
     id: randomBytes(8).toString("hex"),
     name: String(body.name).slice(0, 200),
     verdict: body.verdict === "diverged" ? "diverged" : "clean",
     agent: String(body.agent ?? "unknown").slice(0, 60),
     claim: String(body.claim ?? "").slice(0, 4000),
-    findings: (body.findings ?? []).slice(0, 20).map((f) => ({
+    findings: findings.slice(0, 20).map((f) => ({
       severity: String(f.severity ?? "low").slice(0, 12),
       title: String(f.title ?? "").slice(0, 300),
       detail: String(f.detail ?? "").slice(0, 2000),
     })),
-    filesWritten: Number(body.filesWritten ?? 0),
-    commands: Number(body.commands ?? 0),
+    filesWritten: count(body.filesWritten),
+    commands: count(body.commands),
     pushedAt: Date.now(),
   };
 

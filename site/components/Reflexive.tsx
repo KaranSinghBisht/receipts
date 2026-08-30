@@ -3,7 +3,7 @@ import { Section } from "./ui";
 const FOUND = [
   [
     "IBM Bob drops most of its own tool calls",
-    "Its stream renderer dedupes on the assistant message id and appends each new call to the same message, so only the first call of a turn is reported while every result still arrives — 35 of 68 calls here. Receipts had been auditing less than half of every run.",
+    "Its stream renderer dedupes on the assistant message id and appends each new call to the same message, so only the first call of a turn is reported while every result still arrives — 106 of 194 calls across the current Bob corpus. Receipts had been auditing less than half of every run.",
   ],
   [
     "Two findings were false positives, and Bob caught them",

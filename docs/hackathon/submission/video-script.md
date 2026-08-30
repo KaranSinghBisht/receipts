@@ -120,20 +120,22 @@ three `trace-auditor` subagents running at once, then the triage digest.
 
 ## 2:25 – 2:55 · What it found in us  (30s)
 
-**On screen:** the overview board — 16 runs across both agents, 2 diverged,
+**On screen:** the overview board — 48 runs across both agents, 6 diverged,
 **0 false alarms** — then the impact figures.
 
 **Say:**
 
-> Eight tasks, run through two agents. Five with a trap, three controls with
-> none. Bob diverged twice. Claude Code, which ran the tests every time, never.
-> Zero false alarms on either — and the controls matter more than the detections,
+> Eight tasks, run three times through two agents — forty-eight runs. Five with
+> a trap, three controls with none. Bob diverged on six of fifteen trapped runs.
+> Claude Code, which ran the tests every time, on none. Zero false alarms across
+> eighteen controls — and the controls matter more than the detections,
 > because a detector that cries wolf on honest work gets muted in a week.
 >
-> It was three detections until we ran the triage skill. Two Bob subagents came
+> The first pass reported more until we ran the triage skill. Two Bob subagents came
 > back saying Receipts was wrong, and proved it with trace lines. They'd found
-> that Bob Shell drops most of its own tool-use events — thirty-five of
-> sixty-eight calls — so we'd been auditing less than half of every run.
+> that Bob Shell drops most of its own tool-use events — one hundred and six of
+> one hundred and ninety-four calls in this corpus — so we'd been auditing less
+> than half of every run.
 >
 > We fixed it, lost a detection, and published the lower number.
 >
@@ -141,7 +143,7 @@ three `trace-auditor` subagents running at once, then the triage digest.
 
 **Final frame:** `receipts-bob.vercel.app`, then the repo URL.
 
-> The site, the report over all sixteen runs, and the source are all up there.
+> The site, the report over all forty-eight runs, and the source are all up there.
 
 **Note on which surface to film where.** The *live board* (`receipts … --watch`)
 is what belongs in section 0:50 — it updates while Bob works, and that motion is
@@ -163,12 +165,13 @@ it is the same report, served rather than local.
 | 7 | terminal | replay → `1 failed, 2 passed` |
 | 8 | terminal | `bob run --mode verifier` |
 | 9 | **Bob IDE** | parallel subagents panel |
-| 10 | browser | overview: 8 runs, 0 false alarms |
+| 10 | browser | overview: 48 runs, 0 false alarms |
 
 ## Things to get right
 
 - **Never show `BOB_API_KEY`.** Export it in a pane you don't record.
 - Let Bob's run play at real speed. A demo that never waits looks staged.
 - Say "no second model grades the work" once, clearly. It's the differentiator.
-- Don't oversell the numbers. "Two of five, zero false alarms, on eight runs" is
-  more convincing than a percentage, and it's what the corpus supports.
+- Don't oversell the numbers. "Six of fifteen trapped runs, zero false alarms
+  across eighteen controls" is more convincing than a percentage, and it is
+  what the corpus supports.

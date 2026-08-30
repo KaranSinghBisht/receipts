@@ -4,7 +4,7 @@
 
 **[receipts-bob.vercel.app](https://receipts-bob.vercel.app)** — the
 site, and the [live report](https://receipts-bob.vercel.app/report.html)
-over all 16 runs.
+over all 48 runs.
 
 Receipts reads the execution trace an agent produced — the files it wrote, the
 commands it ran, and what those commands printed — and holds the agent's closing
@@ -142,9 +142,10 @@ Every one of these was invisible until a real trace produced it.
 **Bob emits most of its tool calls without a `tool_use` event.** Its renderer
 keys a dedup set on the assistant message id and appends each new call to the
 same message, so only the first call of a turn is reported. The results still
-arrive, orphaned — 35 of 68 calls in this corpus. Receipts iterated `tool_use`,
-so it was seeing less than half of every run, and "1 file written" was never
-true. `bob_output.infer` rebuilds each call from its result; a command's text is
+arrive, orphaned — 35 of 68 calls in the first eight-run corpus, and 106 of 194
+across the current 24 Bob runs. Receipts iterated `tool_use`, so it was seeing
+less than half of every run, and "1 file written" was never true.
+`bob_output.infer` rebuilds each call from its result; a command's text is
 unrecoverable, so a recovered command is reported as unreported rather than
 invented.
 

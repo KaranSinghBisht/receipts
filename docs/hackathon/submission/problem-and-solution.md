@@ -1,19 +1,17 @@
 # Receipts — problem and solution
 
-*Submission statement. 497 words.*
-
 ## The problem
 
-Teams now generate more agent-written code than they can review. The constraint
+Teams generate more agent-written code than they can review. The constraint
 is no longer writing the change; it is believing it.
 
-And what a reviewer reads is not the change. It is the agent's closing summary —
+What a reviewer reads is not the change. It is the agent's closing summary —
 *"Fixed. Existing behaviour is unaffected."* That sentence comes from the same
-system that did the work, from its own recollection of doing it, and it is almost
-always true. That is what makes it dangerous: after two hundred accurate
+system that did the work, from its recollection, and it is usually true. That is
+what makes it dangerous: after two hundred accurate
 summaries, you read the two hundred and first the same way.
 
-In our study, IBM Bob fixed a function, spot-checked two happy paths, and wrote
+IBM Bob fixed a function, spot-checked two happy paths, and wrote
 *"the existing range case still works."* A third test in the same file had
 started raising. Bob never ran the suite, so it never found out — and nothing in
 a normal review would catch it.
