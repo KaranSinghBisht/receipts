@@ -43,7 +43,7 @@ function Chips() {
 function Stage({ art }: { art: string | null }) {
   return (
     <div
-      className="relative overflow-hidden rounded-[28px] border border-rule bg-terminal px-4 pt-8 shadow-[0_30px_80px_-30px_rgba(21,23,28,0.45)] sm:px-12 sm:pt-10"
+      className="relative overflow-hidden rounded-[28px] border border-rule bg-terminal px-6 pt-12 shadow-[0_30px_80px_-30px_rgba(21,23,28,0.45)] sm:px-16 sm:pt-16 lg:px-24"
       style={
         art
           ? {
@@ -55,9 +55,9 @@ function Stage({ art }: { art: string | null }) {
       }
     >
       <a
-        href="/report.html"
-        aria-label="Open the live report"
-        className="group relative mx-auto block max-w-[1020px] overflow-hidden rounded-t-2xl bg-[#FBFBFA] shadow-[0_40px_90px_-30px_rgba(12,14,20,0.6)] ring-1 ring-black/10"
+        href="/dashboard"
+        aria-label="Open the dashboard"
+        className="group relative mx-auto block max-w-[880px] overflow-hidden rounded-t-2xl bg-[#FBFBFA] shadow-[0_40px_90px_-30px_rgba(12,14,20,0.6)] ring-1 ring-black/10"
       >
         <div className="flex items-center gap-2 border-b border-black/8 bg-[#EFEFED] px-4 py-3">
           <span aria-hidden className="h-[11px] w-[11px] rounded-full bg-[#FF5F57]" />
@@ -70,15 +70,15 @@ function Stage({ art }: { art: string | null }) {
         </div>
         {/* pointer-events off: the preview must not trap the page scroll */}
         <iframe
-          src="/report.html"
-          title="The live Receipts audit"
+          src="/dashboard"
+          title="The live Receipts dashboard"
           loading="lazy"
           tabIndex={-1}
           className="pointer-events-none h-[440px] w-full border-0 bg-white"
         />
         <span className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/25 to-transparent pt-14 pb-5 opacity-0 transition group-hover:opacity-100">
           <span className="rounded-full bg-white px-5 py-2 text-[13.5px] font-medium shadow-lg">
-            Open the live report &rarr;
+            Open the dashboard &rarr;
           </span>
         </span>
       </a>
@@ -132,7 +132,7 @@ export function Hero({
           className="rise mt-9 flex flex-wrap justify-center gap-3"
           style={{ animationDelay: "260ms" }}
         >
-          <Button href="/report.html">Open the live report &rarr;</Button>
+          <Button href="/dashboard">Open the dashboard &rarr;</Button>
           <Button href={repo} variant="quiet">
             Read the source
           </Button>

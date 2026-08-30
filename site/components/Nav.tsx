@@ -17,7 +17,7 @@ export function Nav({ repo }: { repo: string }) {
           >
             Source
           </a>
-          <Button href="/report.html">Open the report</Button>
+          <Button href="/dashboard">Open the dashboard</Button>
         </nav>
       </div>
     </header>

@@ -167,9 +167,21 @@ def main() -> int:
         (SITE / "lib" / "study.json").write_text(
             json.dumps(study_json(), indent=2) + "\n", encoding="utf-8"
         )
+        # The full audit -- every run with its findings, evidence and timeline --
+        # for the site's dashboard. Same payload the report page embeds.
+        from receipts.bundle import build_payload
+        staging2 = Path(tempfile.mkdtemp(prefix="pages-json-"))
+        try:
+            labels2, meta2 = gather(staging2)
+            payload = build_payload(staging2, labels2, SUBHEAD, meta2)
+        finally:
+            shutil.rmtree(staging2, ignore_errors=True)
+        (SITE / "lib" / "report.json").write_text(
+            json.dumps(payload) + "\n", encoding="utf-8"
+        )
         (SITE / "public").mkdir(exist_ok=True)
         shutil.copy(out / "report.html", SITE / "public" / "report.html")
-        print("  site/lib/study.json + site/public/report.html")
+        print("  site/lib/{study,report}.json + site/public/report.html")
 
     for path in sorted(out.iterdir()):
         try:

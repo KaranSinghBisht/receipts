@@ -14,7 +14,7 @@ export function Footer({ repo }: { repo: string }) {
               finding, which fails the check and holds the merge.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <Button href="/report.html">Open the live report &rarr;</Button>
+              <Button href="/dashboard">Open the dashboard &rarr;</Button>
               <Button href={repo} variant="quiet">
                 Read the source
               </Button>
@@ -36,7 +36,7 @@ export function Footer({ repo }: { repo: string }) {
             Built for the IBM TechXchange 2026 Pre-conference Dev Day Hackathon
           </p>
           <div className="ml-auto flex gap-6">
-            <a className="gutter transition hover:text-accent" href="/report.html">
+            <a className="gutter transition hover:text-accent" href="/dashboard">
               Report
             </a>
             <a className="gutter transition hover:text-accent" href={repo}>
