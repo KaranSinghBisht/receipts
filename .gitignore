@@ -27,3 +27,6 @@ site/.next/
 site/.vercel/
 site/.env*.local
 site/public/report.html
+
+# demo traces are produced on the fly
+demo/traces/*.ndjson
