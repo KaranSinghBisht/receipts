@@ -123,7 +123,7 @@ called that a divergence, punishing the more rigorous agent.
 ## Where to see it
 
 The site and the report over all sixteen runs are published at
-**receipts-tawny-six.vercel.app**, rebuilt from the corpora by
+**receipts-bob.vercel.app**, rebuilt from the corpora by
 `study/build_pages.py`, so every figure on it is derived from the study rather
 than written by hand.
 

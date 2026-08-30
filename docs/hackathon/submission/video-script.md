@@ -139,7 +139,7 @@ three `trace-auditor` subagents running at once, then the triage digest.
 >
 > A tool that asks agents to show their receipts has to show its own.
 
-**Final frame:** `receipts-tawny-six.vercel.app`, then the repo URL.
+**Final frame:** `receipts-bob.vercel.app`, then the repo URL.
 
 > The site, the report over all sixteen runs, and the source are all up there.
 

@@ -2,8 +2,8 @@
 
 **A coding agent finished, and it says the tests pass. Check.**
 
-**[receipts-tawny-six.vercel.app](https://receipts-tawny-six.vercel.app)** — the
-site, and the [live report](https://receipts-tawny-six.vercel.app/report.html)
+**[receipts-bob.vercel.app](https://receipts-bob.vercel.app)** — the
+site, and the [live report](https://receipts-bob.vercel.app/report.html)
 over all 16 runs.
 
 Receipts reads the execution trace an agent produced — the files it wrote, the

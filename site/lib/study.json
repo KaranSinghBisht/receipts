@@ -138,7 +138,7 @@
       "count": 1
     },
     {
-      "title": "1 unresolved failure at the end of the run",
+      "title": "The test runner never started, and the summary does not say so",
       "severity": "medium",
       "count": 1
     }

@@ -30,3 +30,8 @@ site/public/report.html
 
 # demo traces are produced on the fly
 demo/traces/*.ndjson
+
+# agent working notes, not part of the submission
+AGENTS.md
+site/AGENTS.md
+site/CLAUDE.md
